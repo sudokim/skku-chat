@@ -1,14 +1,18 @@
 # SKKU Web Chat
 **SKKU Web Chat** is a simple chat app only for SKKU students.
 
-# Features
+# Test Branch
+This is a branch for testing Firebase features.
 
-# Members
-* Pontus Olsson
-[@pontus](https://github.com/nosslo)
+# Build
+Build Javascript files with `webpack`
+1. `npm init`
+2. `npm install firebase`
+3. `npm install webpack webpack-cli -D`
+4. `npm run build`
 
-* Hyunsoo Kim
-[@sudokim](https://github.com/sudokim)
-
-* Damdinbazar
-[@wikiverse](https://github.com/wikiverse)
+# Files
+* `\auth`: Firebase Authentication test for login
+* `\message`: Firebase Realtime Database test for message sync
+* `\storage`: Firebase Storage test for images
+* `test-db.json`: Example of the database
