@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase Storage Test</title>
+
+  <style>
+      * {
+          font-family: sans-serif;
+      }
+  </style>
+</head>
+<body>
+<h1>Firebase Storage Test</h1>
+<h3>Sign in</h3>
+<form>
+  <label>
+    Email:
+    <input id="storage-signin-email" type="email"/>
+  </label>
+  <label>
+    Password:
+    <input id="storage-signin-pw" type="password"/>
+  </label>
+  <button id="storage-signin-btn" type="button">Sign in</button>
+  <button id="storage-signout-btn" type="button">Sign out</button>
+  <button type="reset">Clear</button>
+</form>
+
+<h3>Storage</h3>
+<table>
+  <tr>
+    <td>Upload File</td>
+    <td>
+      <form>
+        <label>
+          Select file:
+          <input id="file-upload-selection" type="file">
+        </label>
+        <label>
+          Upload to:
+          <input id="file-upload-destination" type="text">
+        </label>
+        <button id="file-upload-btn" type="button">Upload</button>
+        <button type="reset">Clear</button>
+      </form>
+    </td>
+  </tr>
+  <tr>
+    <td>Delete File</td>
+    <td>
+      <form>
+        <label>
+          File:
+          <input id="file-delete-selection" type="text">
+        </label>
+        <button id="file-delete-btn" type="button">Delete</button>
+        <button type="reset">Clear</button>
+      </form>
+    </td>
+  </tr>
+  <tr>
+    <td>View Files</td>
+    <td>
+      <form>
+        <label>
+          Directory:
+          <input id="directory-view-selection" type="text">
+        </label>
+        <button id="directory-view-btn" type="button">View</button>
+        <button type="reset">Clear</button>
+      </form>
+    </td>
+  </tr>
+  <tr>
+    <td>Get File URL</td>
+    <td>
+      <form>
+        <label>
+          File:
+          <input id="file-url-selection" type="text">
+          <button id="file-url-btn" type="button">Get URL</button>
+          <button type="reset">Clear</button>
+        </label>
+      </form>
+    </td>
+  </tr>
+</table>
+
+<script src="../dist/storage.bundle.js"></script>
+
+</body>
+</html>
