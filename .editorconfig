@@ -16,3 +16,8 @@ indent_size = 2
 [{*.htm,*.html,*.ng,*.sht,*.shtm,*.shtml}]
 indent_size = 2
 tab_width = 2
+
+[*.js]
+quote_type = single
+index_style = space
+indent_size = 2
