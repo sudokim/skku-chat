@@ -19,21 +19,22 @@ Bundle JavaScript files with `webpack`
 
 # Members
 
-* Pontus Olsson
+- Pontus Olsson
   [@pontus](https://github.com/nosslo)
 
-* Hyunsoo Kim
+- Hyunsoo Kim
   [@sudokim](https://github.com/sudokim)
 
-* Damdinbazar
+- Damdinbazar
   [@wikiverse](https://github.com/wikiverse)
 
 # Contributing
 
 We always welcome your contributions! You could help improve our project by:
 
-* Submitting feature requests or bugs on [Issues](https://github.com/sudokim/skku-web-chat/issues).
-* Making a [pull request](https://github.com/sudokim/skku-web-chat/pulls) with your new code.
+- Submitting feature requests or bugs on [Issues](https://github.com/sudokim/skku-web-chat/issues).
+- Making a [pull request](https://github.com/sudokim/skku-web-chat/pulls) with your new code.
+- Requesting a code review from one of the contributers for the pull request.
 
 # License
 
