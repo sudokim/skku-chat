@@ -26,6 +26,7 @@ body {
   display: flex;
   flex-direction: row;
   border: 0;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .left {
@@ -77,6 +78,7 @@ body {
 .about {
   overflow-y: scroll;
   max-height: auto;
+  border-radius: 20px;
 }
 
 .left footer {
@@ -85,4 +87,8 @@ body {
 
 .login-message {
   color: red;
+}
+
+.card {
+  border-radius: 20px;
 }
