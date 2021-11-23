@@ -75,8 +75,8 @@ body {
 }
 
 .about {
-  overflow-y: scroll;
-  max-height: auto;
+    overflow-y: scroll;
+    max-height: unset;
 }
 
 .left footer {
