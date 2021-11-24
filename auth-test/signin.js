@@ -1,14 +1,10 @@
 import { app } from '../src/firebase';
 import * as auth from '../src/firebase-auth';
 
-let loggedIn = `
-  <p>Logged in<p>
-`;
-
 const login = () => {
   const signinBtn = document.getElementById('signin-btn');
   signinBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-  Loading...`;
+  Signing in`;
   const log = document.querySelector('.login-message');
   log.innerHTML = '';
   auth
@@ -20,6 +16,8 @@ const login = () => {
     .then((resolve) => {
       if (!resolve) {
         log.innerHTML = 'Either email address or username is wrong.';
+      } else {
+        document.location.href = '../profile/profile.html';
       }
       signinBtn.innerHTML = 'Sign in';
     });
