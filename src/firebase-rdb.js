@@ -52,5 +52,59 @@ export function rdbAddNewMessage(app_, userID, roomID, type, content) {
         })
 }
 
+export const rdbUpdateType = Object.freeze({
+    NEW_CHAT: 0,
+    USER_JOINED: 1,
+    USER_LEFT: 2
+})
 
-export {onValue}
+/**
+ * Execute a function whenever the database at the given path and its children is updated
+ *
+ * Note that the snapshot of the database and rdbUpdateType is passed to the function as the first and second argument
+ *
+ * Usage: rdbExecuteWhenUpdated(updateButton, document.getElementById('update-button')
+ * executes updateButton(snapshot, NEW_CHAT, document.getElementById('update-button'))
+ * whenever the database is updated
+ * @param app_ Firebase application reference
+ * @param func Function to execute
+ * @param roomID {string} Room ID
+ * @param args Arguments to pass
+ */
+export function rdbExecuteWhenUpdated(app_, func, roomID, ...args) {
+    const db = getDatabase(app_)
+
+
+}
+
+/**
+ * Get an array of room IDs the user joined
+ * @param app_ Firebase application reference
+ * @param userID {string} User ID
+ * @returns {Promise<Array<string>>} Array of room IDs, or null if error occurred
+ */
+export async function rdbGetUserJoinedChatRooms(app_, userID) {
+    const db = getDatabase(app_)
+    const userRef = ref(db, 'users/' + userID + '/')
+
+    return new Promise(((resolve, reject) => {
+        get(userRef)
+            .then((snapshot) => {
+                if (snapshot.exists()) {
+                    // User exists
+                    const joinedRoomsArray = snapshot.val()['joined_rooms']
+
+                    if (joinedRoomsArray === undefined) {
+                        // User exists but has not joined any room
+                        resolve([])
+                    } else {
+                        resolve(snapshot.val()['joined_rooms'])
+                    }
+
+                } else {
+                    // User does not exist
+                    reject('User does not exist')
+                }
+            })
+    }))
+}

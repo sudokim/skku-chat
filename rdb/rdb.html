@@ -5,9 +5,13 @@
   <title>Firebase Realtime Database Test</title>
 
   <style>
-      * {
-          font-family: sans-serif;
-      }
+    * {
+      font-family: sans-serif;
+    }
+
+    code {
+      font-family: monospace;
+    }
   </style>
 </head>
 <body>
@@ -15,19 +19,44 @@
 <h1>Firebase Realtime Database Test</h1>
 <h3>Sign in</h3>
 <form>
-  <label for="storage-signin-email">Email:</label>
-  <input id="storage-signin-email" type="email"/>
-  <label for="storage-signin-pw">Password:</label>
-  <input id="storage-signin-pw" type="password"/>
+  <label for="rdb-signin-email">Email:</label>
+  <!--  <input id="rdb-signin-email" type="email"/>-->
+  <input id="rdb-signin-email" type="email" value="khs1778@skku.edu"/>
+  <label for="rdb-signin-pw">Password:</label>
+  <!--  <input id="rdb-signin-pw" type="password"/>-->
+  <input id="rdb-signin-pw" type="password" value="12345678"/>
 
-  <button id="storage-signin-btn" type="button">Sign in</button>
-  <button id="storage-signout-btn" type="button">Sign out</button>
+  <button id="rdb-signin-btn" type="button">Sign in</button>
+  <button id="rdb-signout-btn" type="button">Sign out</button>
   <button type="reset">Clear</button>
 </form>
 
-<table>
-  <
-</table>
+<p>Refer to <code>test-db.json</code> on GitHub for the example of DB structure</p>
+<p>Input user ID, then select room to enter</p>
+
+<h3>Chat room</h3>
+<form>
+  <label for="rdb-input-id">User ID</label>
+  <input id="rdb-input-id" type="text">
+  <button id="rdb-select-id" type="button">Select ID</button>
+</form>
+<br>
+<form>
+  <label for="rdb-room-dropdown">Select room</label>
+  <select id="rdb-room-dropdown">
+    <!-- option tags will be added by JavaScript-->
+  </select>
+  <button id="rdb-select-room" type="button">Enter</button>
+</form>
+
+<h3>Chat</h3>
+<label for="chats">Chat room</label><br>
+<textarea cols="80" id="chats" readonly rows="20"></textarea>
+<form>
+  <label for="rdb-new-message">Send</label>
+  <input id="rdb-new-message" type="text"/>
+  <button id="rdb-send-new-message" type="button">Send</button>
+</form>
 
 <script src="../dist/rdb.bundle.js" type="module"></script>
 
