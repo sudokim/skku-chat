@@ -76,8 +76,7 @@ body {
 }
 
 .about {
-  overflow-y: scroll;
-  max-height: auto;
+  overflow-y: auto;
   border-radius: 20px;
 }
 
