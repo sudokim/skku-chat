@@ -81,7 +81,7 @@ export function rdbExecuteWhenUpdated(app_, func, roomID, ...args) {
  * Get an array of room IDs the user joined
  * @param app_ Firebase application reference
  * @param userID {string} User ID
- * @returns {Promise<Array<string>>} Promise of array of string of room IDs
+ * @returns {Promise<Array<string>>} A promise of array of string of room IDs
  */
 export async function rdbGetUserJoinedChatRooms(app_, userID) {
     const db = getDatabase(app_)
@@ -113,10 +113,10 @@ export async function rdbGetUserJoinedChatRooms(app_, userID) {
 }
 
 /**
- * Get an object of all messages from the given chat room
+ * Get an object of all messages from a chat room
  * @param app_ Firebase application reference
  * @param roomID{string} Room ID
- * @returns {Promise<object>} Promise of an object
+ * @returns {Promise<object>} A promise of an object
  */
 export async function rdbGetChatFromChatRoom(app_, roomID) {
     const db = getDatabase(app_)
@@ -143,7 +143,7 @@ export async function rdbGetChatFromChatRoom(app_, roomID) {
  * Get an array of all members in a chat room
  * @param app_ Firebase application reference
  * @param roomID Room ID
- * @returns {Promise<array>} Promise of an array
+ * @returns {Promise<array>} A promise of an array
  */
 export async function rdbGetMembersFromChatRoom(app_, roomID) {
     const db = getDatabase(app_)
