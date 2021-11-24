@@ -92,3 +92,7 @@ body {
 .card {
   border-radius: 20px;
 }
+
+.sent-message {
+  color: green;
+}

@@ -25,6 +25,35 @@ const signup = () => {
 
   auth.authSignUp(app, email, document.getElementById('signup-pw').value);
 };
+
+const forgotPassword = async () => {
+  const username = document.getElementById('forgot-password-username').value;
+  const domain = document.getElementById('forgot-password-domain').value;
+  const forgotMessage = document.getElementById('forgot-password-message');
+  if (!username || !domain) {
+    forgotMessage.innerHTML = 'Please enter a valid email address.';
+    return;
+  }
+  const email = username + '@' + domain;
+  auth.authForgotPassword(app, email).then((resolve) => {
+    if (!resolve) {
+      forgotMessage.innerHTML = "This email doesn't exist.";
+    } else {
+      document.querySelector('.sent-message').innerHTML = 'Password reset link sent.';
+    }
+  });
+};
+
+const clearForgotMessage = () => {
+  const forgotMessage = document.getElementById('forgot-password-message');
+  forgotMessage.innerHTML = '';
+};
+
 document.getElementById('signin-btn').addEventListener('click', login);
 
 document.getElementById('signup-btn').addEventListener('click', signup);
+
+document.getElementById('forgot-password-btn').addEventListener('click', forgotPassword);
+
+document.getElementById('forgot-password-username').addEventListener('input', clearForgotMessage);
+document.getElementById('forgot-password-domain').addEventListener('change', clearForgotMessage);

@@ -4,6 +4,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   signOut,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 
 /**
@@ -132,4 +133,26 @@ export async function authDeleteUser(app_) {
     alert('User not logged in');
     return false;
   }
+}
+
+/**
+ * Sign up for a new account
+ * @param app_ Firebase application reference
+ * @param email_ Email address of the user
+ */
+
+export async function authForgotPassword(app_, email_) {
+  const auth = getAuth(app_);
+  let success;
+  await sendPasswordResetEmail(auth, email_)
+    .then(() => {
+      success = true;
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert('errorCode: ' + errorCode + '\n errorMessage:' + errorMessage);
+      success = false;
+    });
+  return success;
 }

@@ -13,7 +13,7 @@ trim_trailing_whitespace = true
 [{*.har,*.jsb2,*.jsb3,*.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,bowerrc,jest.config}]
 indent_size = 2
 
-[{*.htm,*.html,*.ng,*.sht,*.shtm,*.shtml}]
+[{*.htm,*.html,*.ng,*.sht,*.shtm,*.shtml,*.css}]
 indent_size = 2
 tab_width = 2
 
