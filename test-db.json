@@ -58,7 +58,7 @@
         },
         "m2": {
           "user": "damdin",
-          "photo": "URL or Base64_encoded image",
+          "image": "URL or Base64_encoded image",
           "time": 123124
         }
       },

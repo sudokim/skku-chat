@@ -56,37 +56,37 @@ Chat room data is stored under `"chats"`. A new chat room will be given a unique
 
 ```json
  {
-  "chats": {
-    "rooms": {
-      "_comment": "Information for each chat room",
-      "room-one": {
-        "title": "Test Chat Room",
-        "last_message": "m2"
-      }
-    },
-    "members": {
-      "_comment": "Members of each chat room",
-      "room-id-1": {
-        "hyunsoo": true,
-        "damdin": true
-      }
-    },
-    "messages": {
-      "room-one": {
-        "m1": {
-          "user": "hyunsoo",
-          "message": "This works!",
-          "time": 123123
+    "chats": {
+        "rooms": {
+            "_comment": "Information for each chat room",
+            "room-one": {
+                "title": "Test Chat Room",
+                "last_message": "m2"
+            }
         },
-        "m2": {
-          "user": "damdin",
-          "photo": "URL or Base64-encoded image",
-          "time": 123124,
-          "deleted": true
+        "members": {
+            "_comment": "Members of each chat room",
+            "room-id-1": {
+                "hyunsoo": true,
+                "damdin": true
+            }
+        },
+        "messages": {
+            "room-one": {
+                "m1": {
+                    "user": "hyunsoo",
+                    "message": "This works!",
+                    "time": 123123
+                },
+                "m2": {
+                    "user": "damdin",
+                    "image": "URL or Base64-encoded image",
+                    "time": 123124,
+                    "deleted": true
+                }
+            }
         }
-      }
     }
-  }
 }
 ```
 

@@ -81,7 +81,7 @@ export function rdbExecuteWhenUpdated(app_, func, roomID, ...args) {
  * Get an array of room IDs the user joined
  * @param app_ Firebase application reference
  * @param userID {string} User ID
- * @returns {Promise<Array<string>>} Array of room IDs, or null if error occurred
+ * @returns {Promise<Array<string>>} Promise of array of string of room IDs
  */
 export async function rdbGetUserJoinedChatRooms(app_, userID) {
     const db = getDatabase(app_)
@@ -105,6 +105,36 @@ export async function rdbGetUserJoinedChatRooms(app_, userID) {
                     // User does not exist
                     reject('User does not exist')
                 }
+            })
+            .catch((err) => {
+                reject(err.message)
+            })
+    }))
+}
+
+/**
+ * Get an object of all messages from the given chat room
+ * @param app_ Firebase application reference
+ * @param roomID{string} Room ID
+ * @returns {Promise<object>} Promise of an object
+ */
+export async function rdbGetChatFromChatRoom(app_, roomID) {
+    const db = getDatabase(app_)
+    const chatRoomMessagesRef = ref(db, 'chats/messages/' + roomID + '/')
+
+    return new Promise(((resolve, reject) => {
+        get(chatRoomMessagesRef)
+            .then((snapshot) => {
+                if (snapshot.exists()) {
+                    // Chat room exists
+                    resolve(snapshot.val())
+                } else {
+                    // Chat room does not exist
+                    reject('Chat room does not exist')
+                }
+            })
+            .catch((err) => {
+                reject(err.message)
             })
     }))
 }
