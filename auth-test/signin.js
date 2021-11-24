@@ -37,7 +37,7 @@ const forgotPassword = async () => {
   const email = username + '@' + domain;
   auth.authForgotPassword(app, email).then((resolve) => {
     if (!resolve) {
-      forgotMessage.innerHTML = "This email doesn't exist.";
+      forgotMessage.innerHTML = 'This email doesn\'t exist.';
     } else {
       document.querySelector('.sent-message').innerHTML = 'Password reset link sent.';
     }
