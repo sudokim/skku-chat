@@ -4,7 +4,7 @@ import { get, getDatabase, onChildAdded, onChildChanged, onChildRemoved, ref, se
  * Send a new message
  * @param app_ Firebase application reference
  * @param userID {string} User ID
- * @param roomID {string} ID of the room
+ * @param roomID {number} ID of the room
  * @param messageType {string} Type of the message (for example, message, image)
  * @param content {string} Content of the message (text, URL)
  */
@@ -20,7 +20,6 @@ export function rdbSendMessage(app_, userID, roomID, messageType, content) {
 
                 // ID of the new message
                 const newMessageIndex = parseInt(lastMessageID.slice(1), 10) + 1;
-                const newMessageID = "m" + newMessageIndex;
 
                 let newMessageObject = {
                     message_index: newMessageIndex,
@@ -30,13 +29,13 @@ export function rdbSendMessage(app_, userID, roomID, messageType, content) {
                 newMessageObject[messageType] = content;
 
                 // Add a new child to chats/messages/roomID/newMessageID with chat contents
-                set(ref(db, "chats/messages/" + roomID + "/" + newMessageID), newMessageObject).catch((err) => {
+                set(ref(db, "chats/messages/" + roomID + "/m" + newMessageIndex), newMessageObject).catch((err) => {
                     alert("Error while adding new message\n(" + err.code + ") " + err.message);
                 });
 
                 // Update last-message of room
                 update(roomRef, {
-                    last_message: newMessageID,
+                    last_message: "m" + newMessageIndex,
                 })
                     .then(() => alert("Successfully added new message"))
                     .catch((err) => {
@@ -50,6 +49,24 @@ export function rdbSendMessage(app_, userID, roomID, messageType, content) {
         .catch((err) => {
             alert("Error while getting message ID\n(" + err.code + ") " + err.message);
         });
+}
+
+/**
+ * Delete (Mark as deleted) a sent message
+ *
+ * @param app_ Firebase application reference
+ * @param userID{string} Current user ID
+ * @param roomID{string} Room ID
+ * @param chatID{number} Chat ID to delete
+ */
+export function rdbDeleteMessage(app_, userID, roomID, chatID) {
+    const db = getDatabase(app_);
+    const chatRef = ref(db, "chats/messages/" + roomID + "/m" + chatID + "/");
+
+    // Mark message as deleted
+    update(chatRef, { deleted: true })
+        .then(() => alert("Message " + chatID + " deleted"))
+        .catch((err) => alert("Error while deleting message ID\n(" + err.code + ") " + err.message));
 }
 
 /**
@@ -68,7 +85,7 @@ export function rdbSendMessage(app_, userID, roomID, messageType, content) {
  */
 export function rdbExecuteNewChat(app_, func, roomID, ...args) {
     const db = getDatabase(app_);
-    const messagesRef = ref(db, 'chats/messages/' + roomID + '/');
+    const messagesRef = ref(db, "chats/messages/" + roomID + "/");
 
     // New chat added
     return onChildAdded(
@@ -94,7 +111,7 @@ export function rdbExecuteNewChat(app_, func, roomID, ...args) {
  */
 export function rdbExecuteDeleteChat(app_, func, roomID, ...args) {
     const db = getDatabase(app_);
-    const messagesRef = ref(db, 'chats/messages/' + roomID + '/');
+    const messagesRef = ref(db, "chats/messages/" + roomID + "/");
 
     // Chat deleted -> new property 'deleted' is added to previous chat object
     return onChildChanged(
@@ -116,7 +133,7 @@ export function rdbExecuteDeleteChat(app_, func, roomID, ...args) {
  */
 export function rdbExecuteUserJoined(app_, func, roomID, ...args) {
     const db = getDatabase(app_);
-    const roomRef = ref(db, 'chats/rooms/' + roomID + '/');
+    const roomRef = ref(db, "chats/rooms/" + roomID + "/");
 
     // New member
     onChildAdded(roomRef, (snapshot) => func(snapshot, ...args));
@@ -132,7 +149,7 @@ export function rdbExecuteUserJoined(app_, func, roomID, ...args) {
  */
 export function rdbExecuteUserLeft(app_, func, roomID, ...args) {
     const db = getDatabase(app_);
-    const roomRef = ref(db, 'chats/rooms/' + roomID + '/');
+    const roomRef = ref(db, "chats/rooms/" + roomID + "/");
 
     // Member left
     onChildRemoved(roomRef, (snapshot) => func(snapshot, ...args));

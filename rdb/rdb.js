@@ -80,6 +80,16 @@ document.getElementById("rdb-send-new-message").addEventListener("click", () => 
     rdb.rdbSendMessage(app, userID, roomID, messageType, content);
 });
 
+// Delete message
+document.getElementById("rdb-delete-message-btn").addEventListener("click", () => {
+    rdb.rdbDeleteMessage(
+        app,
+        document.getElementById("rdb-select-id").value,
+        document.getElementById("rdb-room-dropdown").value,
+        document.getElementById("rdb-delete-message-id").value
+    );
+});
+
 /**
  * Add a chat bubble
  * @param chatID ID of the chat
@@ -124,15 +134,13 @@ function chatAdded(chatID, chatData) {
 }
 
 /**
- * Edit a chat bubble to mark as deleted
- * @param chatObj{object}
+ * Mark deleted chat
+ * @param chatID ID of the chat
+ * @param chatData Contents of the chat
  */
-function chatDeleted(chatObj) {
-    const chatID = Object.keys(chatObj)[0];
-    const chatData = chatObj[chatID];
-
+function chatDeleted(chatID, chatData) {
     let chatBubble = document.getElementById("chat-bubble-" + chatID);
 
     chatBubble.innerHTML =
-        "<strong>" + chatData.user + "</strong><br>" + "<i>(Deleted Message)</i><small> + chatData.time + </small>";
+        "<strong>" + chatData.user + "</strong><br>" + "<i>(Deleted Message)</i><br><small>" + chatData.time + "</small>";
 }
