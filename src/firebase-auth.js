@@ -6,6 +6,12 @@ import {
   signOut,
 } from 'firebase/auth';
 
+/**
+ * Sign up for a new account
+ * @param app_ Firebase application reference
+ * @param email_ Email address of the user
+ * @param password_ Password of the user
+ */
 export function authSignUp(app_, email_, password_) {
   // Email validity check
   const skku_domain = ['skku.edu', 'g.skku.edu', 'o365.skku.edu'];
@@ -15,7 +21,7 @@ export function authSignUp(app_, email_, password_) {
     );
 
   if (re !== null && skku_domain.includes(re[0].split('@')[1])) {
-    // Valid email used, proceed with sign up
+    // Valid email used, continue
     const auth = getAuth(app_);
 
     createUserWithEmailAndPassword(auth, email_, password_)
@@ -32,6 +38,13 @@ export function authSignUp(app_, email_, password_) {
   }
 }
 
+/**
+ * Sign in to an account
+ * @param app_ Firebase application reference
+ * @param email_ Email address
+ * @param password_ Password
+ * @returns {Promise<boolean>} Returns a promise for a boolean value of whether the sign in was successful or not
+ */
 export async function authSignIn(app_, email_, password_) {
   const auth = getAuth(app_);
   let success;
@@ -47,6 +60,11 @@ export async function authSignIn(app_, email_, password_) {
   return success;
 }
 
+/**
+ * Check if the user is currently signed in
+ * @param app_ Firebase application reference
+ * @returns {boolean} Boolean value of whether the user is signed in
+ */
 export function authSignInStatus(app_) {
   const auth = getAuth(app_);
   const user = auth.currentUser;
@@ -62,7 +80,12 @@ export function authSignInStatus(app_) {
   }
 }
 
-export function authSignOut(app_) {
+/**
+ * Sign out from the app
+ * @param app_ Firebase application reference
+ * @returns {Promise<boolean>} Returns a promise for a boolean value of whether the sign out was successful or not
+ */
+export async function authSignOut(app_) {
   const auth = getAuth(app_);
   const user = auth.currentUser;
 
@@ -71,17 +94,25 @@ export function authSignOut(app_) {
     signOut(auth)
       .then(() => {
         alert('Sign out successful');
+        return true;
       })
       .catch((err) => {
         alert('Error during sign out\n(' + err.code + ') ' + err.message);
+        return false;
       });
   } else {
     // User not logged in
     alert('User not logged in');
+    return false;
   }
 }
 
-export function authDeleteUser(app_) {
+/**
+ * Delete an user
+ * @param app_ Firebase application reference
+ * @returns {Promise<boolean>} Returns a promise for a boolean value of whether deleting the user was successful or not
+ */
+export async function authDeleteUser(app_) {
   const auth = getAuth(app_);
   const user = auth.currentUser;
 
@@ -90,12 +121,15 @@ export function authDeleteUser(app_) {
     deleteUser(user)
       .then(() => {
         alert('User delete successful');
+        return true;
       })
       .catch((err) => {
         alert('Error during user deletion\n(' + err.code + ') ' + err.message);
+        return false;
       });
   } else {
     // User not logged in
     alert('User not logged in');
+    return false;
   }
 }
