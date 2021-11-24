@@ -19,5 +19,5 @@ tab_width = 2
 
 [*.js]
 quote_type = single
-index_style = space
+indent_style = space
 indent_size = 2
