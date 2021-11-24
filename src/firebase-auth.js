@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
+  sendSignInLinkToEmail,
 } from 'firebase/auth';
 
 /**
@@ -136,7 +137,7 @@ export async function authDeleteUser(app_) {
 }
 
 /**
- * Sign up for a new account
+ * Send Password Reset Email
  * @param app_ Firebase application reference
  * @param email_ Email address of the user
  */
@@ -146,6 +147,35 @@ export async function authForgotPassword(app_, email_) {
   let success;
   await sendPasswordResetEmail(auth, email_)
     .then(() => {
+      success = true;
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert('errorCode: ' + errorCode + '\n errorMessage:' + errorMessage);
+      success = false;
+    });
+  return success;
+}
+
+/**
+ * Send Passwordless Sign-in Link
+ * @param app_ Firebase application reference
+ * @param email_ Email address of the user
+ */
+
+export async function authPWLessSignIn(app_, email_) {
+  const actionCodeSettings = {
+    url: 'http://localhost:5500/profile/profile.html',
+    handleCodeInApp: true,
+  };
+
+  const auth = getAuth();
+  let success;
+
+  await sendSignInLinkToEmail(auth, email_, actionCodeSettings)
+    .then(() => {
+      window.localStorage.setItem('emailForSignIn', email_);
       success = true;
     })
     .catch((error) => {

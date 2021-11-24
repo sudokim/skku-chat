@@ -96,3 +96,10 @@ body {
 .sent-message {
   color: green;
 }
+
+#passwordless-signin-btn,
+#passwordless-btn {
+  background-image: linear-gradient(to right, #4e54c8, #8f94fb);
+  border-color: #7f7fd5;
+  color: white;
+}
