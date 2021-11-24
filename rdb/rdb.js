@@ -52,17 +52,23 @@ document.getElementById('rdb-select-room').addEventListener('click', () => {
            Object.values(chats).forEach((chat) => {
                textarea.value += chat.user + ': '
 
-               if (chat.message === undefined) {
-                   // An image is sent
-                   // TODO: Get URL of the image from 'firebase-storage' and display the image
-                   textarea.value += 'IMAGE: ' + chat.image
+               if (chat.deleted) {
+                   // Deleted chat
+                   textarea.value += '( Deleted Message )\n'
                } else {
-                   // A message is sent
-                   textarea.value += chat.message
-               }
 
-               // TODO: Convert UNIX timestamp to human-readable time
-               textarea.value += ' at ' + chat.time + '\n'
+                   if (chat.message === undefined) {
+                       // An image is sent
+                       // TODO: Get URL of the image from 'firebase-storage' and display the image
+                       textarea.value += 'IMAGE: ' + chat.image
+                   } else {
+                       // A message is sent
+                       textarea.value += chat.message
+                   }
+
+                   // TODO: Convert UNIX timestamp to human-readable time
+                   textarea.value += ' at ' + chat.time + '\n'
+               }
            })
        })
        .catch((err) =>

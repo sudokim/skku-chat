@@ -59,7 +59,8 @@
         "m2": {
           "user": "damdin",
           "image": "URL or Base64_encoded image",
-          "time": 123124
+          "time": 123124,
+          "deleted": true
         }
       },
       "room_two": {
