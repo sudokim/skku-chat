@@ -1,4 +1,4 @@
-import {getDatabase, ref, set, onValue, get, update} from 'firebase/database'
+import { getDatabase, ref, set, onValue, get, update } from 'firebase/database';
 
 /**
  * Send a new message
@@ -9,29 +9,29 @@ import {getDatabase, ref, set, onValue, get, update} from 'firebase/database'
  * @param content {string} Content of the message (text, URL)
  */
 export function rdbSendMessage(app_, userID, roomID, messageType, content) {
-    const db = getDatabase(app_)
-    const roomRef = ref(db, 'chats/rooms/' + roomID + '/')  // Reference to chats/room/roomID
+    const db = getDatabase(app_);
+    const roomRef = ref(db, 'chats/rooms/' + roomID + '/');  // Reference to chats/room/roomID
 
     // Get the ID of the last message
     get(roomRef)
         .then((snapshot) => {
             if (snapshot.exists()) {
-                const lastMessageID = snapshot.val()['last_message']
+                const lastMessageID = snapshot.val()['last_message'];
 
                 // ID of the new message
-                const newMessageID = 'm' + (parseInt(lastMessageID.slice(1), 10) + 1)
+                const newMessageID = 'm' + (parseInt(lastMessageID.slice(1), 10) + 1);
 
                 let newMessageObject = {
                     user: userID,
                     time: new Date().valueOf()
-                }
-                newMessageObject[messageType] = content
+                };
+                newMessageObject[messageType] = content;
 
                 // Add a new child to chats/messages/roomID/newMessageID with chat contents
                 set(ref(db, 'chats/messages/' + roomID + '/' + newMessageID), newMessageObject)
                     .catch((err) => {
-                        alert('Error while adding new message\n(' + err.code + ') ' + err.message)
-                    })
+                        alert('Error while adding new message\n(' + err.code + ') ' + err.message);
+                    });
 
                 // Update last-message of room
                 update(roomRef, {
@@ -39,24 +39,24 @@ export function rdbSendMessage(app_, userID, roomID, messageType, content) {
                 })
                     .then(() => alert('Successfully added new message'))
                     .catch((err) => {
-                        alert('Error while updating last sent message\n(' + err.code + ') ' + err.message)
-                    })
+                        alert('Error while updating last sent message\n(' + err.code + ') ' + err.message);
+                    });
 
             } else {
                 // New chat room with no message
-                alert('Room ID ' + roomID + ' does not exist')
+                alert('Room ID ' + roomID + ' does not exist');
             }
         })
         .catch((err) => {
-            alert('Error while getting message ID\n(' + err.code + ') ' + err.message)
-        })
+            alert('Error while getting message ID\n(' + err.code + ') ' + err.message);
+        });
 }
 
 export const rdbUpdateType = Object.freeze({
     NEW_CHAT: 0,
     USER_JOINED: 1,
     USER_LEFT: 2
-})
+});
 
 /**
  * Execute a function whenever the database at the given path and its children is updated
@@ -72,7 +72,7 @@ export const rdbUpdateType = Object.freeze({
  * @param args Arguments to pass
  */
 export function rdbExecuteWhenUpdated(app_, func, roomID, ...args) {
-    const db = getDatabase(app_)
+    const db = getDatabase(app_);
 
 
 }
@@ -84,32 +84,32 @@ export function rdbExecuteWhenUpdated(app_, func, roomID, ...args) {
  * @returns {Promise<Array<string>>} A promise of array of string of room IDs
  */
 export async function rdbGetUserJoinedChatRooms(app_, userID) {
-    const db = getDatabase(app_)
-    const userRef = ref(db, 'users/' + userID + '/')
+    const db = getDatabase(app_);
+    const userRef = ref(db, 'users/' + userID + '/');
 
     return new Promise(((resolve, reject) => {
         get(userRef)
             .then((snapshot) => {
                 if (snapshot.exists()) {
                     // User exists
-                    const joinedRoomsArray = snapshot.val()['joined_rooms']
+                    const joinedRoomsArray = snapshot.val()['joined_rooms'];
 
                     if (joinedRoomsArray === undefined) {
                         // User exists but has not joined any room
-                        resolve([])
+                        resolve([]);
                     } else {
-                        resolve(snapshot.val()['joined_rooms'])
+                        resolve(snapshot.val()['joined_rooms']);
                     }
 
                 } else {
                     // User does not exist
-                    reject('User does not exist')
+                    reject('User does not exist');
                 }
             })
             .catch((err) => {
-                reject(err.message)
-            })
-    }))
+                reject(err.message);
+            });
+    }));
 }
 
 /**
@@ -119,24 +119,24 @@ export async function rdbGetUserJoinedChatRooms(app_, userID) {
  * @returns {Promise<object>} A promise of an object
  */
 export async function rdbGetChatFromChatRoom(app_, roomID) {
-    const db = getDatabase(app_)
-    const chatRoomMessagesRef = ref(db, 'chats/messages/' + roomID + '/')
+    const db = getDatabase(app_);
+    const chatRoomMessagesRef = ref(db, 'chats/messages/' + roomID + '/');
 
     return new Promise(((resolve, reject) => {
         get(chatRoomMessagesRef)
             .then((snapshot) => {
                 if (snapshot.exists()) {
                     // Chat room exists
-                    resolve(snapshot.val())
+                    resolve(snapshot.val());
                 } else {
                     // Chat room does not exist
-                    reject('Chat room does not exist')
+                    reject('Chat room does not exist');
                 }
             })
             .catch((err) => {
-                reject(err.message)
-            })
-    }))
+                reject(err.message);
+            });
+    }));
 }
 
 /**
@@ -146,22 +146,22 @@ export async function rdbGetChatFromChatRoom(app_, roomID) {
  * @returns {Promise<array>} A promise of an array
  */
 export async function rdbGetMembersFromChatRoom(app_, roomID) {
-    const db = getDatabase(app_)
-    const chatRoomMembersRef = ref(db, 'chats/members/' + roomID + '/')
+    const db = getDatabase(app_);
+    const chatRoomMembersRef = ref(db, 'chats/members/' + roomID + '/');
 
     return new Promise(((resolve, reject) => {
         get(chatRoomMembersRef)
             .then((snapshot) => {
                 if (snapshot.exists()) {
                     // Room exists
-                    resolve(Object.keys(snapshot.val()))
+                    resolve(Object.keys(snapshot.val()));
                 } else {
                     // Chat room does not exist
-                    reject('Chat room does not exist')
+                    reject('Chat room does not exist');
                 }
             })
             .catch((err) => {
-                reject(err.message)
-            })
-    }))
+                reject(err.message);
+            });
+    }));
 }
