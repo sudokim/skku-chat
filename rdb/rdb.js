@@ -1,20 +1,34 @@
 import { app } from "../src/firebase";
 import * as auth from "../src/firebase-auth";
 import * as rdb from "../src/firebase-rdb";
+import { get, getDatabase, ref } from "firebase/database";
 
 let unsubscribeNewChat;
 let unsubscribeModifiedChat;
 
 // Sign in
-document
-    .getElementById("rdb-signin-btn")
-    .addEventListener("click", () =>
-        auth.authSignIn(
-            app,
-            document.getElementById("rdb-signin-email").value,
-            document.getElementById("rdb-signin-pw").value
-        )
-    );
+document.getElementById("rdb-signin-btn").addEventListener("click", () => {
+    auth.authSignIn(
+        app,
+        document.getElementById("rdb-signin-email").value,
+        document.getElementById("rdb-signin-pw").value
+    ).then(() => {
+        // Update users
+        get(ref(getDatabase(app), "users/")).then((snapshot) => {
+            const userDropdown = document.getElementById("rdb-input-id");
+
+            Object.keys(snapshot.val()).forEach((user) => {
+                let newOption = document.createElement("option");
+
+                newOption.value = user;
+                newOption.innerHTML = user;
+
+                userDropdown.appendChild(newOption);
+            });
+        });
+    });
+});
+
 // Sign out
 document.getElementById("rdb-signout-btn").addEventListener("click", () => auth.authSignOut(app));
 
@@ -142,5 +156,10 @@ function chatDeleted(chatID, chatData) {
     let chatBubble = document.getElementById("chat-bubble-" + chatID);
 
     chatBubble.innerHTML =
-        "<strong>" + chatData.user + "</strong><br>" + "<i>(Deleted Message)</i><br><small>" + chatData.time + "</small>";
+        "<strong>" +
+        chatData.user +
+        "</strong><br>" +
+        "<i>(Deleted Message)</i><br><small>" +
+        chatData.time +
+        "</small>";
 }
