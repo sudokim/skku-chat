@@ -32,10 +32,12 @@
     "rooms": {
       "_comment": "Information for each chat room",
       "room_one": {
-        "title": "Test Chat Room"
+        "title": "Test Chat Room",
+        "last_message": "m2"
       },
       "room_two": {
-        "title": "Test Chat Room 2"
+        "title": "Test Chat Room 2",
+        "last_message": "m1"
       }
     },
     "members": {

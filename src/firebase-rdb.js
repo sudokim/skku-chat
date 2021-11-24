@@ -5,19 +5,43 @@ import {getDatabase, ref, set, onValue, get, update} from 'firebase/database'
  * @param app_ Firebase application reference
  * @param userID {string} User ID
  * @param roomID {string} ID of the room
- * @param type {string} Type of the message (for example, message, image)
+ * @param messageType {string} Type of the message (for example, message, image)
  * @param content {string} Content of the message (text, URL)
  */
-export function rdbAddNewMessage(app_, userID, roomID, type, content) {
+export function rdbSendMessage(app_, userID, roomID, messageType, content) {
     const db = getDatabase(app_)
-    const roomRef = ref(db, 'chats/rooms/' + roomID)  // Reference to chats/room/roomID
+    const roomRef = ref(db, 'chats/rooms/' + roomID + '/')  // Reference to chats/room/roomID
 
     // Get the ID of the last message
-    let lastMessageID = null
     get(roomRef)
         .then((snapshot) => {
             if (snapshot.exists()) {
-                lastMessageID = snapshot.val()['last-message']
+                const lastMessageID = snapshot.val()['last_message']
+
+                // ID of the new message
+                const newMessageID = 'm' + (parseInt(lastMessageID.slice(1), 10) + 1)
+
+                let newMessageObject = {
+                    user: userID,
+                    time: new Date().valueOf()
+                }
+                newMessageObject[messageType] = content
+
+                // Add a new child to chats/messages/roomID/newMessageID with chat contents
+                set(ref(db, 'chats/messages/' + roomID + '/' + newMessageID), newMessageObject)
+                    .catch((err) => {
+                        alert('Error while adding new message\n(' + err.code + ') ' + err.message)
+                    })
+
+                // Update last-message of room
+                update(roomRef, {
+                    'last-message': newMessageID
+                })
+                    .then(() => alert('Successfully added new message'))
+                    .catch((err) => {
+                        alert('Error while updating last sent message\n(' + err.code + ') ' + err.message)
+                    })
+
             } else {
                 // New chat room with no message
                 alert('Room ID ' + roomID + ' does not exist')
@@ -25,30 +49,6 @@ export function rdbAddNewMessage(app_, userID, roomID, type, content) {
         })
         .catch((err) => {
             alert('Error while getting message ID\n(' + err.code + ') ' + err.message)
-        })
-
-    // ID of the new message
-    const newMessageID = 'm' + (parseInt(lastMessageID.slice(1), 10) + 1)
-
-    let newMessageObject = {
-        user: userID,
-        time: new Date().valueOf()
-    }
-    newMessageObject[type] = content
-
-    // Add a new child to chats/messages/roomID/newMessageID with chat contents
-    set(ref(db, 'chats/messages/' + roomID + '/' + newMessageID), newMessageObject)
-        .catch((err) => {
-            alert('Error while adding new message\n(' + err.code + ') ' + err.message)
-        })
-
-    // Update last-message of room
-    update(roomRef, {
-        'last-message': newMessageID
-    })
-        .then(() => alert('Successfully added new message'))
-        .catch((err) => {
-            alert('Error while updating last sent message\n(' + err.code + ') ' + err.message)
         })
 }
 
@@ -128,6 +128,33 @@ export async function rdbGetChatFromChatRoom(app_, roomID) {
                 if (snapshot.exists()) {
                     // Chat room exists
                     resolve(snapshot.val())
+                } else {
+                    // Chat room does not exist
+                    reject('Chat room does not exist')
+                }
+            })
+            .catch((err) => {
+                reject(err.message)
+            })
+    }))
+}
+
+/**
+ * Get an array of all members in a chat room
+ * @param app_ Firebase application reference
+ * @param roomID Room ID
+ * @returns {Promise<array>} Promise of an array
+ */
+export async function rdbGetMembersFromChatRoom(app_, roomID) {
+    const db = getDatabase(app_)
+    const chatRoomMembersRef = ref(db, 'chats/members/' + roomID + '/')
+
+    return new Promise(((resolve, reject) => {
+        get(chatRoomMembersRef)
+            .then((snapshot) => {
+                if (snapshot.exists()) {
+                    // Room exists
+                    resolve(Object.keys(snapshot.val()))
                 } else {
                     // Chat room does not exist
                     reject('Chat room does not exist')

@@ -20,11 +20,9 @@
 <h3>Sign in</h3>
 <form>
   <label for="rdb-signin-email">Email:</label>
-  <!--  <input id="rdb-signin-email" type="email"/>-->
-  <input id="rdb-signin-email" type="email" value="khs1778@skku.edu"/>
+  <input id="rdb-signin-email" type="email"/>
   <label for="rdb-signin-pw">Password:</label>
-  <!--  <input id="rdb-signin-pw" type="password"/>-->
-  <input id="rdb-signin-pw" type="password" value="12345678"/>
+  <input id="rdb-signin-pw" type="password"/>
 
   <button id="rdb-signin-btn" type="button">Sign in</button>
   <button id="rdb-signout-btn" type="button">Sign out</button>
@@ -50,6 +48,12 @@
 </form>
 
 <h3>Chat</h3>
+<strong>Members</strong>
+<div id="members">
+  <i>Members will be displayed here...</i>
+  <!-- Members will be added by JavaScript -->
+</div>
+<br>
 <label for="textarea-chats">Chat room</label><br>
 <textarea cols="80" id="textarea-chats" placeholder="Chats will be displayed here..." readonly rows="20"></textarea>
 <form>

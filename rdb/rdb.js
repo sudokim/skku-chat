@@ -41,13 +41,23 @@ document.getElementById('rdb-select-id').addEventListener('click', () => {
 
 // Join chatroom
 document.getElementById('rdb-select-room').addEventListener('click', () => {
-    // Fetch all chat items
+    const roomID = document.getElementById('rdb-room-dropdown').value
 
+    // Update chat members
+    rdb.rdbGetMembersFromChatRoom(app, roomID)
+       .then((members) => {
+           const memberDiv = document.getElementById('members')
+           memberDiv.innerHTML = ''
+
+           members.forEach((member) => memberDiv.innerHTML += member + ' ')
+       })
+
+    // Fetch all chat items
     // Here, in this test, we add all chats to a textarea
     const textarea = document.getElementById('textarea-chats')
     textarea.value = ''
 
-    rdb.rdbGetChatFromChatRoom(app, document.getElementById('rdb-room-dropdown').value)
+    rdb.rdbGetChatFromChatRoom(app, roomID)
        .then((chats) => {
            Object.values(chats).forEach((chat) => {
                textarea.value += chat.user + ': '
@@ -75,3 +85,15 @@ document.getElementById('rdb-select-room').addEventListener('click', () => {
            alert('Error occurred:\n' + err)
        )
 })
+
+// Send message
+document.getElementById('rdb-send-new-message').addEventListener('click', () => {
+        const userID = document.getElementById('rdb-input-id').value
+        const roomID = document.getElementById('rdb-room-dropdown').value
+        // TODO: Change messageType to 'image' if an image is uploaded
+        const messageType = 'message'
+        const content = document.getElementById('rdb-new-message').value
+
+        rdb.rdbSendMessage(app, userID, roomID, messageType, content)
+    }
+)
