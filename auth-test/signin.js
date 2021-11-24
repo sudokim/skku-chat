@@ -8,11 +8,7 @@ const login = () => {
   const log = document.querySelector('.login-message');
   log.innerHTML = '';
   auth
-    .authSignIn(
-      app,
-      document.getElementById('signin-email').value,
-      document.getElementById('signin-pw').value
-    )
+    .authSignIn(app, document.getElementById('signin-email').value, document.getElementById('signin-pw').value)
     .then((resolve) => {
       if (!resolve) {
         log.innerHTML = 'Either email address or username is wrong.';
@@ -26,7 +22,7 @@ const signup = () => {
   const username = document.getElementById('username').value;
   const domain = document.getElementById('domain').value;
   const email = username + '@' + domain;
-  console.log(email);
+
   auth.authSignUp(app, email, document.getElementById('signup-pw').value);
 };
 document.getElementById('signin-btn').addEventListener('click', login);
