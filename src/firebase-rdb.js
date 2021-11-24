@@ -35,7 +35,7 @@ export function rdbSendMessage(app_, userID, roomID, messageType, content) {
 
                 // Update last-message of room
                 update(roomRef, {
-                    'last-message': newMessageID
+                    'last_message': newMessageID
                 })
                     .then(() => alert('Successfully added new message'))
                     .catch((err) => {
