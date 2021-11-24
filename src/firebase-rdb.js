@@ -1,4 +1,4 @@
-import { getDatabase, ref, set, onValue, get, update } from 'firebase/database';
+import { get, getDatabase, onChildAdded, onChildChanged, onChildRemoved, ref, set, update } from 'firebase/database';
 
 /**
  * Send a new message
@@ -10,71 +10,132 @@ import { getDatabase, ref, set, onValue, get, update } from 'firebase/database';
  */
 export function rdbSendMessage(app_, userID, roomID, messageType, content) {
     const db = getDatabase(app_);
-    const roomRef = ref(db, 'chats/rooms/' + roomID + '/');  // Reference to chats/room/roomID
+    const roomRef = ref(db, "chats/rooms/" + roomID + "/"); // Reference to chats/room/roomID
 
     // Get the ID of the last message
     get(roomRef)
         .then((snapshot) => {
             if (snapshot.exists()) {
-                const lastMessageID = snapshot.val()['last_message'];
+                const lastMessageID = snapshot.val()["last_message"];
 
                 // ID of the new message
-                const newMessageID = 'm' + (parseInt(lastMessageID.slice(1), 10) + 1);
+                const newMessageIndex = parseInt(lastMessageID.slice(1), 10) + 1;
+                const newMessageID = "m" + newMessageIndex;
 
                 let newMessageObject = {
+                    message_index: newMessageIndex,
                     user: userID,
-                    time: new Date().valueOf()
+                    time: new Date().valueOf(),
                 };
                 newMessageObject[messageType] = content;
 
                 // Add a new child to chats/messages/roomID/newMessageID with chat contents
-                set(ref(db, 'chats/messages/' + roomID + '/' + newMessageID), newMessageObject)
-                    .catch((err) => {
-                        alert('Error while adding new message\n(' + err.code + ') ' + err.message);
-                    });
+                set(ref(db, "chats/messages/" + roomID + "/" + newMessageID), newMessageObject).catch((err) => {
+                    alert("Error while adding new message\n(" + err.code + ") " + err.message);
+                });
 
                 // Update last-message of room
                 update(roomRef, {
-                    'last_message': newMessageID
+                    last_message: newMessageID,
                 })
-                    .then(() => alert('Successfully added new message'))
+                    .then(() => alert("Successfully added new message"))
                     .catch((err) => {
-                        alert('Error while updating last sent message\n(' + err.code + ') ' + err.message);
+                        alert("Error while updating last sent message\n(" + err.code + ") " + err.message);
                     });
-
             } else {
                 // New chat room with no message
-                alert('Room ID ' + roomID + ' does not exist');
+                alert("Room ID " + roomID + " does not exist");
             }
         })
         .catch((err) => {
-            alert('Error while getting message ID\n(' + err.code + ') ' + err.message);
+            alert("Error while getting message ID\n(" + err.code + ") " + err.message);
         });
 }
 
-export const rdbUpdateType = Object.freeze({
-    NEW_CHAT: 0,
-    USER_JOINED: 1,
-    USER_LEFT: 2
-});
-
 /**
- * Execute a function whenever the database at the given path and its children is updated
+ * Execute a function whenever the a new child is appended (a new chat is updated)
  *
- * Note that the snapshot of the database and rdbUpdateType is passed to the function as the first and second argument
+ * Note that chat ID and data is passed as first and second arguments to func
  *
- * Usage: rdbExecuteWhenUpdated(updateButton, document.getElementById('update-button')
- * executes updateButton(snapshot, NEW_CHAT, document.getElementById('update-button'))
+ * Usage: rdbExecuteNewChat(updateButton, document.getElementById('update-button')
+ * executes updateButton(ID, chat data, document.getElementById('update-button'))
  * whenever the database is updated
  * @param app_ Firebase application reference
- * @param func Function to execute
- * @param roomID {string} Room ID
+ * @param func{function} Function to execute
+ * @param roomID{string} Room ID
+ * @param args Arguments to pass
+ * @returns function Function to cancel listening
+ */
+export function rdbExecuteNewChat(app_, func, roomID, ...args) {
+    const db = getDatabase(app_);
+    const messagesRef = ref(db, 'chats/messages/' + roomID + '/');
+
+    // New chat added
+    return onChildAdded(
+        messagesRef,
+        (snapshot) => func(snapshot.val().message_index, snapshot.val(), ...args),
+        (err) => alert(err.message)
+    );
+}
+
+/**
+ * Execute a function whenever the a new child is modified
+ *
+ * Note that chat ID and data is passed as first and second arguments to func
+ *
+ * Usage: rdbExecuteDeleteChat(updateButton, document.getElementById('remove-id')
+ * executes updateButton(ID, chat data, document.getElementById('remove-id'))
+ * whenever the database is updated
+ * @param app_ Firebase application reference
+ * @param func{function} Function to execute
+ * @param roomID{string} Room ID
+ * @param args Arguments to pass
+ * @returns function Function to cancel listening
+ */
+export function rdbExecuteDeleteChat(app_, func, roomID, ...args) {
+    const db = getDatabase(app_);
+    const messagesRef = ref(db, 'chats/messages/' + roomID + '/');
+
+    // Chat deleted -> new property 'deleted' is added to previous chat object
+    return onChildChanged(
+        messagesRef,
+        (snapshot) => {
+            func(snapshot.val().message_index, snapshot.val(), ...args);
+        },
+        (err) => alert(err.message)
+    );
+}
+
+/**
+ * Execute a function whenever a new member joined
+ *
+ * @param app_ Firebase application reference
+ * @param func{function} Function to execute
+ * @param roomID Room ID
  * @param args Arguments to pass
  */
-export function rdbExecuteWhenUpdated(app_, func, roomID, ...args) {
+export function rdbExecuteUserJoined(app_, func, roomID, ...args) {
     const db = getDatabase(app_);
+    const roomRef = ref(db, 'chats/rooms/' + roomID + '/');
 
+    // New member
+    onChildAdded(roomRef, (snapshot) => func(snapshot, ...args));
+}
 
+/**
+ * Execute a function whenever a member left
+ *
+ * @param app_ Firebase application reference
+ * @param func{function} Function to execute
+ * @param roomID Room ID
+ * @param args Arguments to pass
+ */
+export function rdbExecuteUserLeft(app_, func, roomID, ...args) {
+    const db = getDatabase(app_);
+    const roomRef = ref(db, 'chats/rooms/' + roomID + '/');
+
+    // Member left
+    onChildRemoved(roomRef, (snapshot) => func(snapshot, ...args));
 }
 
 /**
@@ -85,31 +146,30 @@ export function rdbExecuteWhenUpdated(app_, func, roomID, ...args) {
  */
 export async function rdbGetUserJoinedChatRooms(app_, userID) {
     const db = getDatabase(app_);
-    const userRef = ref(db, 'users/' + userID + '/');
+    const userRef = ref(db, "users/" + userID + "/");
 
-    return new Promise(((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         get(userRef)
             .then((snapshot) => {
                 if (snapshot.exists()) {
                     // User exists
-                    const joinedRoomsArray = snapshot.val()['joined_rooms'];
+                    const joinedRoomsArray = snapshot.val()["joined_rooms"];
 
                     if (joinedRoomsArray === undefined) {
                         // User exists but has not joined any room
                         resolve([]);
                     } else {
-                        resolve(snapshot.val()['joined_rooms']);
+                        resolve(snapshot.val()["joined_rooms"]);
                     }
-
                 } else {
                     // User does not exist
-                    reject('User does not exist');
+                    reject("User does not exist");
                 }
             })
             .catch((err) => {
                 reject(err.message);
             });
-    }));
+    });
 }
 
 /**
@@ -120,9 +180,9 @@ export async function rdbGetUserJoinedChatRooms(app_, userID) {
  */
 export async function rdbGetChatFromChatRoom(app_, roomID) {
     const db = getDatabase(app_);
-    const chatRoomMessagesRef = ref(db, 'chats/messages/' + roomID + '/');
+    const chatRoomMessagesRef = ref(db, "chats/messages/" + roomID + "/");
 
-    return new Promise(((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         get(chatRoomMessagesRef)
             .then((snapshot) => {
                 if (snapshot.exists()) {
@@ -130,13 +190,13 @@ export async function rdbGetChatFromChatRoom(app_, roomID) {
                     resolve(snapshot.val());
                 } else {
                     // Chat room does not exist
-                    reject('Chat room does not exist');
+                    reject("Chat room does not exist");
                 }
             })
             .catch((err) => {
                 reject(err.message);
             });
-    }));
+    });
 }
 
 /**
@@ -147,9 +207,9 @@ export async function rdbGetChatFromChatRoom(app_, roomID) {
  */
 export async function rdbGetMembersFromChatRoom(app_, roomID) {
     const db = getDatabase(app_);
-    const chatRoomMembersRef = ref(db, 'chats/members/' + roomID + '/');
+    const chatRoomMembersRef = ref(db, "chats/members/" + roomID + "/");
 
-    return new Promise(((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         get(chatRoomMembersRef)
             .then((snapshot) => {
                 if (snapshot.exists()) {
@@ -157,11 +217,11 @@ export async function rdbGetMembersFromChatRoom(app_, roomID) {
                     resolve(Object.keys(snapshot.val()));
                 } else {
                     // Chat room does not exist
-                    reject('Chat room does not exist');
+                    reject("Chat room does not exist");
                 }
             })
             .catch((err) => {
                 reject(err.message);
             });
-    }));
+    });
 }
