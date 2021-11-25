@@ -8,47 +8,46 @@ import { get, getDatabase, onChildAdded, onChildChanged, onChildRemoved, ref, se
  * @param messageType {string} Type of the message (for example, message, image)
  * @param content {string} Content of the message (text, URL)
  */
-export function rdbSendMessage(app_, userID, roomID, messageType, content) {
+export async function rdbSendMessage(app_, userID, roomID, messageType, content) {
     const db = getDatabase(app_);
     const roomRef = ref(db, "chats/rooms/" + roomID + "/"); // Reference to chats/room/roomID
 
     // Get the ID of the last message
-    get(roomRef)
-        .then((snapshot) => {
-            if (snapshot.exists()) {
-                const lastMessageID = snapshot.val()["last_message"];
+    return new Promise((resolve, reject) => {
+        get(roomRef)
+            .then((snapshot) => {
+                if (snapshot.exists()) {
+                    const lastMessageID = snapshot.val()["last_message"];
 
-                // ID of the new message
-                const newMessageIndex = parseInt(lastMessageID.slice(1), 10) + 1;
+                    // ID of the new message
+                    const newMessageIndex = parseInt(lastMessageID.slice(1), 10) + 1;
 
-                let newMessageObject = {
-                    message_index: newMessageIndex,
-                    user: userID,
-                    time: new Date().valueOf(),
-                };
-                newMessageObject[messageType] = content;
+                    let newMessageObject = {
+                        message_index: newMessageIndex,
+                        user: userID,
+                        time: new Date().valueOf(),
+                    };
+                    newMessageObject[messageType] = content;
 
-                // Add a new child to chats/messages/roomID/newMessageID with chat contents
-                set(ref(db, "chats/messages/" + roomID + "/m" + newMessageIndex), newMessageObject).catch((err) => {
-                    alert("Error while adding new message\n(" + err.code + ") " + err.message);
-                });
-
-                // Update last-message of room
-                update(roomRef, {
-                    last_message: "m" + newMessageIndex,
-                })
-                    .then(() => alert("Successfully added new message"))
-                    .catch((err) => {
-                        alert("Error while updating last sent message\n(" + err.code + ") " + err.message);
+                    // Add a new child to chats/messages/roomID/newMessageID with chat contents
+                    set(ref(db, "chats/messages/" + roomID + "/m" + newMessageIndex), newMessageObject).catch((err) => {
+                        alert("Error while adding new message\n(" + err.code + ") " + err.message);
                     });
-            } else {
-                // New chat room with no message
-                alert("Room ID " + roomID + " does not exist");
-            }
-        })
-        .catch((err) => {
-            alert("Error while getting message ID\n(" + err.code + ") " + err.message);
-        });
+
+                    // Update last-message of room
+                    update(roomRef, {
+                        last_message: "m" + newMessageIndex,
+                    })
+                        .then(resolve)
+                        .catch(reject);
+                } else {
+                    // New chat room with no message
+                    // TODO: Create new room
+                    reject("Create new room not supported yet");
+                }
+            })
+            .catch(reject);
+    });
 }
 
 /**
@@ -59,14 +58,12 @@ export function rdbSendMessage(app_, userID, roomID, messageType, content) {
  * @param roomID{string} Room ID
  * @param chatID{number} Chat ID to delete
  */
-export function rdbDeleteMessage(app_, userID, roomID, chatID) {
+export async function rdbDeleteMessage(app_, userID, roomID, chatID) {
     const db = getDatabase(app_);
     const chatRef = ref(db, "chats/messages/" + roomID + "/m" + chatID + "/");
 
     // Mark message as deleted
-    update(chatRef, { deleted: true })
-        .then(() => alert("Message " + chatID + " deleted"))
-        .catch((err) => alert("Error while deleting message ID\n(" + err.code + ") " + err.message));
+    return update(chatRef, { deleted: true });
 }
 
 /**
@@ -126,17 +123,24 @@ export function rdbExecuteDeleteChat(app_, func, roomID, ...args) {
 /**
  * Execute a function whenever a new member joined
  *
+ * Note that the first argument of 'func' will be the ID of the member
+ *
  * @param app_ Firebase application reference
  * @param func{function} Function to execute
  * @param roomID Room ID
  * @param args Arguments to pass
+ * @return function Function to cancel listening
  */
 export function rdbExecuteUserJoined(app_, func, roomID, ...args) {
     const db = getDatabase(app_);
-    const roomRef = ref(db, "chats/rooms/" + roomID + "/");
+    const roomRef = ref(db, "chats/members/" + roomID + "/");
 
     // New member
-    onChildAdded(roomRef, (snapshot) => func(snapshot, ...args));
+    return onChildAdded(
+        roomRef,
+        (snapshot) => func(snapshot.val(), ...args),
+        (err) => alert(err.message)
+    );
 }
 
 /**
@@ -146,13 +150,18 @@ export function rdbExecuteUserJoined(app_, func, roomID, ...args) {
  * @param func{function} Function to execute
  * @param roomID Room ID
  * @param args Arguments to pass
+ * @return function Function to cancel listening
  */
 export function rdbExecuteUserLeft(app_, func, roomID, ...args) {
     const db = getDatabase(app_);
-    const roomRef = ref(db, "chats/rooms/" + roomID + "/");
+    const roomRef = ref(db, "chats/members/" + roomID + "/");
 
     // Member left
-    onChildRemoved(roomRef, (snapshot) => func(snapshot, ...args));
+    return onChildRemoved(
+        roomRef,
+        (snapshot) => func(snapshot.val(), ...args),
+        (err) => alert(err.message)
+    );
 }
 
 /**
@@ -176,7 +185,7 @@ export async function rdbGetUserJoinedChatRooms(app_, userID) {
                         // User exists but has not joined any room
                         resolve([]);
                     } else {
-                        resolve(snapshot.val()["joined_rooms"]);
+                        resolve(Object.keys(snapshot.val()["joined_rooms"]));
                     }
                 } else {
                     // User does not exist
@@ -240,5 +249,49 @@ export async function rdbGetMembersFromChatRoom(app_, roomID) {
             .catch((err) => {
                 reject(err.message);
             });
+    });
+}
+
+/**
+ * Add user to a chat room
+ * @param app_ Firebase application reference
+ * @param userID{string}
+ * @param roomID{string}
+ * @returns {Promise<void>}
+ */
+export async function rdbChatRoomJoinUser(app_, userID, roomID) {
+    const db = getDatabase(app_);
+    const rootRef = ref(db, "/");
+
+    let updateObject = {};
+    updateObject["/chats/members/" + roomID + "/" + userID] = userID;
+    updateObject["/users/" + userID + "/joined_rooms/" + roomID] = roomID;
+
+    return new Promise((resolve, reject) => {
+        update(rootRef, updateObject)
+            .then(() => resolve())
+            .catch((err) => reject(err));
+    });
+}
+
+/**
+ * Delete user from a chat room
+ * @param app_ Firebase application reference
+ * @param userID{string}
+ * @param roomID{string}
+ * @returns {Promise<void>}
+ */
+export async function rdbChatRoomLeaveUser(app_, userID, roomID) {
+    const db = getDatabase(app_);
+    const rootRef = ref(db, "/");
+
+    let updateObject = {};
+    updateObject["/chats/members/" + roomID + "/" + userID] = null;
+    updateObject["/users/" + userID + "/joined_rooms/" + roomID] = null;
+
+    return new Promise((resolve, reject) => {
+        update(rootRef, updateObject)
+            .then(() => resolve())
+            .catch((err) => reject(err));
     });
 }

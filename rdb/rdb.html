@@ -14,17 +14,17 @@
       }
 
       p.chat-bubble {
-        margin: 2px;
-        padding: 1px;
-        border: black 1px;
+        margin: 10px;
+        padding: 3px;
+        border: black solid 1px;
         text-align: left;
         width: 400px;
       }
 
       p.chat-bubble-self {
-        margin: 2px;
-        padding: 1px;
-        border: black 1px;
+        margin: 10px;
+        padding: 3px;
+        border: black solid 1px;
         text-align: right;
         background: lightsteelblue;
         width: 400px;
@@ -68,12 +68,13 @@
 
     <h3>Chat</h3>
     <strong>Members</strong>
-    <div id="members">
-      <i>Members will be displayed here...</i>
+    <ul id="members">
+      <li>Members will appear here...</li>
       <!-- Members will be added by JavaScript -->
-    </div>
+    </ul>
     <br />
     <div id="chats">
+      <i>Chats will appear here...</i>
       <!-- Chats will be added by JavaScript -->
     </div>
     <form>
@@ -85,6 +86,17 @@
       <label for="rdb-delete-message-id">Delete</label>
       <input id="rdb-delete-message-id" type="text" />
       <button id="rdb-delete-message-btn" type="button">Delete</button>
+    </form>
+    <h4>Join/Leave</h4>
+    <form>
+      <label for="rdb-join-user">Join</label>
+      <input id="rdb-join-user" type="text" />
+      <button id="rdb-join-user-btn" type="button">Join</button>
+    </form>
+    <form>
+      <label for="rdb-leave-user">Leave</label>
+      <input id="rdb-leave-user" type="text" />
+      <button id="rdb-leave-user-btn" type="button">Leave</button>
     </form>
 
     <script src="../dist/rdb.bundle.js" type="module"></script>
