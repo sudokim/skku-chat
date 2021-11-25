@@ -1,16 +1,14 @@
 {
   "chats": {
-    "_comment": "room_one, room_two... could be randomly generated UUID for each chat room",
     "members": {
-      "_comment": "Members of each chat room",
       "room_one": {
-        "damdin": true,
-        "hyunsoo": true
+        "damdin": "damdin",
+        "hyunsoo": "hyunsoo"
       },
       "room_two": {
-        "damdin": true,
-        "hyunsoo": true,
-        "pontus": true
+        "damdin": "damdin",
+        "hyunsoo": "hyunsoo",
+        "pontus": "pontus"
       }
     },
     "messages": {
@@ -45,7 +43,6 @@
       }
     },
     "rooms": {
-      "_comment": "Information for each chat room",
       "room_one": {
         "last_message": "m3",
         "title": "Test Chat Room"
@@ -57,23 +54,22 @@
     }
   },
   "users": {
-    "_comment": "Users",
     "damdin": {
       "email": "",
-      "joined_rooms": [
-        "room_two",
-        "room_one"
-      ],
+      "joined_rooms": {
+        "room_one": "room_one",
+        "room_two": "room_two"
+      },
       "name": "Damdinbazar",
       "profile_image": "",
       "status_message": "Hello!"
     },
     "hyunsoo": {
       "email": "khs1778@skku.edu",
-      "joined_rooms": [
-        "room_one",
-        "room_two"
-      ],
+      "joined_rooms": {
+        "room_one": "room_one",
+        "room_two": "room_two"
+      },
       "name": "Hyunsoo Kim",
       "profile_image": "",
       "status_message": "안녕!"

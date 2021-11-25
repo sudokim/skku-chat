@@ -10,10 +10,10 @@ User information and chat rooms are stored in Realtime Database.
 
 ```json
 {
-  "chats": {
-  },
-  "users": {
-  }
+    "chats": {
+    },
+    "users": {
+    }
 }
 ```
 
@@ -23,17 +23,18 @@ Users are stored as a separate entry under `"users"`.
 
 ```json
 {
-  "users": {
-    "ID": {
-      "email": "email address",
-      "name": "display name",
-      "profile_image": "URL to image or Base64 encoded image",
-      "status_message": "status message for profile display"
-    },
-    "ID2": {
-      ...
+    "users": {
+        "ID": {
+            "email": "email address",
+            "name": "display name",
+            "joined_rooms": {
+                "room_one": "room_one",
+                "room_two": "room_two"
+            },
+            "profile_image": "URL to image or Base64 encoded image",
+            "status_message": "status message for profile display"
+        }
     }
-  }
 }
 ```
 
@@ -67,8 +68,8 @@ Chat room data is stored under `"chats"`. A new chat room will be given a unique
         "members": {
             "_comment": "Members of each chat room",
             "room-id-1": {
-                "hyunsoo": true,
-                "damdin": true
+                "hyunsoo": "hyunsoo",
+                "damdin": "damdin"
             }
         },
         "messages": {
