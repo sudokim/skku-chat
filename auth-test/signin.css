@@ -77,9 +77,8 @@ body {
 }
 
 .about {
-    overflow-y: scroll;
-    max-height: auto;
-    border-radius: 20px;
+  overflow-y: auto;
+  border-radius: 20px;
 }
 
 .left footer {
@@ -92,4 +91,8 @@ body {
 
 .card {
     border-radius: 20px;
+}
+
+.sent-message {
+  color: green;
 }

@@ -65,6 +65,7 @@ export async function storageView(app_, dir) {
         list(dirRef)
             .then((r) => resolve(r.items))
             .catch((err) => reject(err.message));
+
     });
 }
 

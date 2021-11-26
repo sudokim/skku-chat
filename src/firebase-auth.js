@@ -1,9 +1,10 @@
 import {
-    createUserWithEmailAndPassword,
-    deleteUser,
-    getAuth,
-    signInWithEmailAndPassword,
-    signOut,
+  createUserWithEmailAndPassword,
+  deleteUser,
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 
 /**
@@ -31,7 +32,6 @@ export function authSignUp(app_, email_, password_) {
                 .then((uc) => {
                     alert("User created\n" + uc.user.email);
                     // TODO: Email verification
-
                     resolve(uc);
                 })
                 .catch((err) => reject(err.message));
@@ -65,7 +65,7 @@ export async function authSignIn(app_, email_, password_) {
 
 /**
  * Check if the user is currently signed in
- *
+ * 
  * @param app_ Firebase application reference
  * @returns {boolean} Boolean value of whether the user is signed in
  */
@@ -118,4 +118,26 @@ export async function authDeleteUser(app_) {
             reject("User not signed in");
         }
     });
+}
+
+/**
+ * Sign up for a new account
+ * @param app_ Firebase application reference
+ * @param email_ Email address of the user
+ */
+
+export async function authForgotPassword(app_, email_) {
+  const auth = getAuth(app_);
+  let success;
+  await sendPasswordResetEmail(auth, email_)
+    .then(() => {
+      success = true;
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert('errorCode: ' + errorCode + '\n errorMessage:' + errorMessage);
+      success = false;
+    });
+  return success;
 }

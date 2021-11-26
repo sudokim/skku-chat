@@ -77,9 +77,9 @@ body {
 }
 
 .about {
-    overflow-y: scroll;
-    max-height: auto;
-    border-radius: 20px;
+  overflow-y: scroll;
+  max-height: initial;
+  border-radius: 20px;
 }
 
 .left footer {
