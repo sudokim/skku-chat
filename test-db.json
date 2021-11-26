@@ -1,67 +1,84 @@
 {
-  "users": {
-    "_comment": "Users",
-    "hyunsoo": {
-      "name": "Hyunsoo Kim",
-      "status_message": "안녕!",
-      "profile_image": "",
-      "email": "khs1778@skku.edu"
-    },
-    "damdin": {
-      "name": "Damdinbazar",
-      "status_message": "Hello!",
-      "profile_image": "",
-      "email": ""
-    },
-    "pontus": {
-      "name": "Pontus Olsson",
-      "profile_image": "",
-      "status_message": "Hi!",
-      "email": ""
-    }
-  },
   "chats": {
-    "_comment": "room-one, room-two... could be randomly generated UUID for each chat room",
-    "rooms": {
-      "_comment": "Information for each chat room",
-      "room-one": {
-        "title": "Test Chat Room"
-      },
-      "room-two": {
-        "title": "Test Chat Room 2"
-      }
-    },
     "members": {
-      "_comment": "Members of each chat room",
-      "room-one": {
-        "hyunsoo": true,
-        "damdin": true
+      "room_one": {
+        "damdin": "damdin",
+        "hyunsoo": "hyunsoo"
       },
-      "room-two": {
-        "damdin": true,
-        "pontus": true
+      "room_two": {
+        "damdin": "damdin",
+        "hyunsoo": "hyunsoo",
+        "pontus": "pontus"
       }
     },
     "messages": {
-      "room-one": {
+      "room_one": {
         "m1": {
-          "user": "hyunsoo",
           "message": "This works!",
-          "time": 123123
+          "message_index": 1,
+          "time": 123123,
+          "user": "hyunsoo"
         },
         "m2": {
-          "user": "damdin",
-          "photo": "URL or Base64-encoded image",
-          "time": 123124
+          "deleted": true,
+          "image": "URL or Base64_encoded image",
+          "message_index": 2,
+          "time": 123124,
+          "user": "damdin"
+        },
+        "m3": {
+          "message": "Hello",
+          "message_index": 3,
+          "time": 1637768818751,
+          "user": "hyunsoo"
         }
       },
-      "room-two": {
+      "room_two": {
         "m1": {
-          "user": "pontus",
           "message": "Cool!",
-          "time": 123125
+          "message_index": 1,
+          "time": 123125,
+          "user": "pontus"
         }
       }
+    },
+    "rooms": {
+      "room_one": {
+        "last_message": "m3",
+        "title": "Test Chat Room"
+      },
+      "room_two": {
+        "last_message": "m1",
+        "title": "Test Chat Room 2"
+      }
+    }
+  },
+  "users": {
+    "damdin": {
+      "email": "",
+      "joined_rooms": {
+        "room_one": "room_one",
+        "room_two": "room_two"
+      },
+      "name": "Damdinbazar",
+      "profile_image": "",
+      "status_message": "Hello!"
+    },
+    "hyunsoo": {
+      "email": "khs1778@skku.edu",
+      "joined_rooms": {
+        "room_one": "room_one",
+        "room_two": "room_two"
+      },
+      "name": "Hyunsoo Kim",
+      "profile_image": "",
+      "status_message": "안녕!"
+    },
+    "pontus": {
+      "email": "",
+      "name": "Pontus Olsson",
+      "profile_image": "",
+      "status_message": "Hi!"
     }
   }
 }

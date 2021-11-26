@@ -1,9 +1,9 @@
-import { app } from '../src/firebase';
-import * as auth from '../src/firebase-auth';
+import { app } from "../src/firebase";
+import * as auth from "../src/firebase-auth";
 
 const login = () => {
-  const signinBtn = document.getElementById('signin-btn');
-  signinBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+    const signinBtn = document.getElementById("signin-btn");
+    signinBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
   Signing in`;
   const log = document.querySelector('.login-message');
   log.innerHTML = '';
