@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chats</title>
+
+    <style>
+      .active {
+        background: grey;
+      }
+
+      table td {
+        vertical-align: top;
+      }
+
+      .chat-room-item {
+        border: black solid 1px;
+        margin: 10px;
+        padding: 5px;
+      }
+
+      strong.chat-room-item {
+        /* Title in chat room list */
+        font-size-adjust: 1.2;
+      }
+
+      i.chat-room-item {
+        /* Members in chat room list */
+        font-style: normal;
+      }
+
+      .chat-image {
+        /* Images in chat */
+        max-height: 200px;
+        height: 80%;
+        width: auto;
+      }
+
+      .chat-bubble {
+        /* Chat bubbles */
+        margin: 10px;
+        padding: 3px;
+        border: black solid 1px;
+        text-align: left;
+        width: 400px;
+      }
+
+      .chat-bubble-self {
+        /* Chat bubbles that the current user sent */
+        margin: 10px;
+        padding: 3px;
+        border: black solid 1px;
+        text-align: right;
+        background: lightsteelblue;
+        width: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td>
+          <h2>SKKU Web Chat</h2>
+        </td>
+        <td style="vertical-align: middle">
+          <a href="../profile/profile.html" style="text-align: right">Profile</a>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <!-- Chat list -->
+          <div id="chat-room-list-header">
+            <button type="button">Create new room</button>
+          </div>
+          <div id="chat-room-list" style="width: 300px">Loading rooms...</div>
+        </td>
+        <td>
+          <!-- Chat -->
+          <div id="chats">
+            <div id="chats-header">
+              <!-- Header -->
+              <table style="width: fit-content">
+                <tr>
+                  <td>
+                    <strong id="chats-header-room-title"></strong><br />
+                    <i id="chats-header-room-members"></i>
+                  </td>
+                  <td>
+                    <button id="chat-invite-user">Invite</button>
+                    <button id="chat-leave">Leave</button>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div id="chats-body">
+              <!-- Body, chat balloons are added here -->
+              <!-- I couldn't figure out how to add vertical scroll bars only to a div element -->
+            </div>
+            <div id="chats-footer">
+              <!-- Message box and send button -->
+              <form onsubmit="return false;">
+                <button id="chat-send-image" type="button">
+                  <!-- Replace svg with image -->
+                  <svg
+                    class="bi bi-file-image"
+                    fill="currentColor"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M8.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                    <path
+                      d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v8l-2.083-2.083a.5.5 0 0 0-.76.063L8 11 5.835 9.7a.5.5 0 0 0-.611.076L3 12V2z"
+                    />
+                  </svg>
+                </button>
+                <label for="chat-input-message">Send: </label>
+                <input id="chat-input-message" />
+                <button id="chat-send-message" type="button">
+                  <!-- Replace svg with image -->
+                  <svg
+                    class="bi bi-send-fill"
+                    fill="currentColor"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89.471-1.178-1.178.471L5.93 9.363l.338.215a.5.5 0 0 1 .154.154l.215.338 7.494-7.494Z"
+                      fill-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <script src="../dist/chats.bundle.js" type="module"></script>
+  </body>
+</html>

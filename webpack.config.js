@@ -1,16 +1,17 @@
-const path = require("path");
+const path = require('path');
 
 module.exports = {
-    entry: {
-        auth: "./auth/auth.js",
-        rdb: "./rdb/rdb.js",
-        storage: "./storage/storage.js",
-        signin: "./auth-test/signin.js",
-        profile: "./profile/profile.js",
-    },
-    output: {
-        path: path.resolve(__dirname, "dist"),
-        filename: "[name].bundle.js",
-    },
-    devtool: "source-map",
+  entry: {
+    auth: './auth/auth.js',
+    rdb: './rdb/rdb.js',
+    storage: './storage/storage.js',
+    signin: './auth-test/signin.js',
+    profile: './profile/profile.js',
+    chats: './chats/chats.js',
+  },
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].bundle.js',
+  },
+  devtool: 'source-map',
 };

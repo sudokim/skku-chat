@@ -74,12 +74,12 @@ Chat room data is stored under `"chats"`. A new chat room will be given a unique
         },
         "messages": {
             "room-one": {
-                "m1": {
+                "m": {
                     "user": "hyunsoo",
                     "message": "This works!",
                     "time": 123123
                 },
-                "m2": {
+                "2": {
                     "user": "damdin",
                     "image": "URL or Base64-encoded image",
                     "time": 123124,
