@@ -170,8 +170,8 @@ export function authDeleteUser(app_) {
 export async function authForgotPassword(app_, email_) {
   const auth = getAuth(app_);
 
-  return new Promise((resolve, reject) => {
-    sendPasswordResetEmail(auth, email_)
+  return new Promise(async (resolve, reject) => {
+    await sendPasswordResetEmail(auth, email_)
       .then(resolve)
       .catch((err) => reject(err.message));
   });

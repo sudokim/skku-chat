@@ -53,12 +53,13 @@ function login() {
 
 // Sign up
 function signup() {
-  const signupBtn = document.getElementById('signup-btn')
+  const signupBtn = document.getElementById('signup-btn');
   const username = document.getElementById('username').value;
   const domain = document.getElementById('domain').value;
   const email = username + '@' + domain;
 
-  signupBtn.innerHTML= '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Signing up...'
+  signupBtn.innerHTML =
+    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Signing up...';
 
   auth
     .authSignUp(
@@ -77,7 +78,7 @@ function signup() {
     })
     .catch(alert);
 
-  signupBtn.innerHTML = "Sign Up"
+  signupBtn.innerHTML = 'Sign Up';
 }
 
 const forgotPassword = async () => {
@@ -89,13 +90,14 @@ const forgotPassword = async () => {
     return;
   }
   const email = username + '@' + domain;
-  auth.authForgotPassword(app, email).then((resolve) => {
-    if (!resolve) {
-      forgotMessage.innerHTML = "This email doesn't exist.";
-    } else {
+  await auth
+    .authForgotPassword(app, email)
+    .then(() => {
       document.querySelector('.sent-message').innerHTML = 'Password reset link has been sent.';
-    }
-  });
+    })
+    .catch(() => {
+      forgotMessage.innerHTML = "This email doesn't exist.";
+    });
 };
 
 const clearForgotMessage = () => {
