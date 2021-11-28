@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Chats</title>
+
+  <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" rel="stylesheet">
+  <link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+        integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css" rel="stylesheet"
+        type="text/css">
+
+  <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" rel="stylesheet">
+
+  <link href="chats.css" rel="stylesheet">
+
+
+</head>
+<body>
+
+
+<div class="container-fluid h-100">
+  <div class="row justify-content-center h-100">
+
+    <div class="col-md-4 col-xl-3 chat">
+      <div class="card mb-sm-3 mb-md-0 contacts_card">
+        <div class="card-header">
+
+        </div>
+        <div class="card-body contacts_body">
+
+          <div id="chat-room-list-header">
+            <button class="btn btn-success" id="btn-create-new-room" type="button">Create new room</button>
+            <div id="chat-room-list">Loading rooms...</div>
+          </div>
+
+
+        </div>
+        <div class="card-footer"></div>
+      </div>
+    </div>
+
+
+    <div class="col-md-8 col-xl-6 chat">
+      <div class="card">
+
+        <!-- Header -->
+
+        <div class="card-header msg_head">
+          <div class="d-flex bd-highlight">
+
+            <div class="img_cont">
+              <img class="rounded-circle user_img" src="SKKU-LOGO.png">
+              <span class="online_icon"></span>
+            </div>
+            <div class="user_info">
+
+              <div id="chats-header">
+
+                <strong id="chats-header-room-title"></strong><br/>
+                <i id="chats-header-room-members"></i>
+
+              </div>
+              <a href="../profile/profile.html" style="text-align: right">Profile</a>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!--Chat body-->
+
+        <div class="card-body msg_card_body">
+
+          <div class="d-flex justify-content-end mb-4">
+            <div id="chats-body">
+
+              <!-- Body, chat balloons are added here -->
+              <!-- I couldn't figure out how to add vertical scroll bars only to a div element -->
+
+            </div>
+            <div class="img_cont_msg">
+              <img class="rounded-circle user_img_msg" src="SKKU-LOGO.png">
+            </div>
+          </div>
+
+        </div>
+        <div class="card-footer">
+          <!-- Message box and send button -->
+          <div class="input-group">
+            <form onsubmit="return false;">
+              <button id="chat-send-image" type="button">
+                <!-- Replace svg with image -->
+                <svg
+                    class="bi bi-file-image"
+                    fill="currentColor"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M8.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                  <path
+                      d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v8l-2.083-2.083a.5.5 0 0 0-.76.063L8 11 5.835 9.7a.5.5 0 0 0-.611.076L3 12V2z"
+                  />
+                </svg>
+              </button>
+            </form>
+            <!-- <label for="chat-input-message">Send: </label> -->
+            <textarea class="form-control type_msg" id="chat-input-message"
+                      placeholder="Type your message..."></textarea>
+            <!--  <input id="chat-input-message" /> -->
+            <button id="chat-send-message" type="button">
+              <!-- Replace svg with image -->
+
+              <svg
+                  class="bi bi-send-fill"
+                  fill="currentColor"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                    d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89.471-1.178-1.178.471L5.93 9.363l.338.215a.5.5 0 0 1 .154.154l.215.338 7.494-7.494Z"
+                    fill-rule="evenodd"
+                />
+              </svg>
+            </button>
+
+
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="../dist/chats.bundle.js" type="module"></script>
+
+</body>
+</html>
