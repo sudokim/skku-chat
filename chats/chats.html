@@ -30,8 +30,11 @@
 
             <div id="chat-room-list-header">
               <button type="button" class="btn btn-success" >Create new room</button>
+              <div id="chat-room-list">Loading rooms...</div>
             </div>
-            <div id="chat-room-list" style="width: 300px">Loading rooms...</div>
+
+
+
 
 
 					</div>
@@ -78,51 +81,6 @@
 
             <div class="card-body msg_card_body">
 
-              <div class="d-flex justify-content-start mb-4">
-                <div class="img_cont_msg">
-                  <img src="SKKU-LOGO.png" class="rounded-circle user_img_msg">
-                </div>
-                <div class="msg_cotainer">
-                  Hi, how are you?
-                  <span class="msg_time">8:40 AM, Today</span>
-                </div>
-              </div>
-              <div class="d-flex justify-content-end mb-4">
-                <div class="msg_cotainer_send">
-                  Hi I am good tnx how about you?
-                  <span class="msg_time_send">8:55 AM, Today</span>
-                </div>
-                <div class="img_cont_msg">
-              <img src="SKKU-LOGO.png" class="rounded-circle user_img_msg">
-                </div>
-              </div>
-              <div class="d-flex justify-content-start mb-4">
-                <div class="img_cont_msg">
-                  <img src="SKKU-LOGO.png" class="rounded-circle user_img_msg">
-                </div>
-                <div class="msg_cotainer">
-                  I am good too, thank you for your help yesterday
-                  <span class="msg_time">9:00 AM, Today</span>
-                </div>
-              </div>
-              <div class="d-flex justify-content-end mb-4">
-                <div class="msg_cotainer_send">
-                  You are welcome
-                  <span class="msg_time_send">9:05 AM, Today</span>
-                </div>
-                <div class="img_cont_msg">
-              <img src="SKKU-LOGO.png" class="rounded-circle user_img_msg">
-                </div>
-              </div>
-              <div class="d-flex justify-content-start mb-4">
-                <div class="img_cont_msg">
-                  <img src="SKKU-LOGO.png" class="rounded-circle user_img_msg">
-                </div>
-                <div class="msg_cotainer">
-                  I am looking forward to next time
-                  <span class="msg_time">9:07 AM, Today</span>
-                </div>
-              </div>
               <div class="d-flex justify-content-end mb-4">
                 <div id="chats-body">
 
@@ -138,43 +96,56 @@
             </div>
             <div class="card-footer">
               <!-- Message box and send button -->
-              <form onsubmit="return false;">
-                <button id="chat-send-image" type="button">
+              <div class="input-group">
+                <form onsubmit="return false;">
+                  <button id="chat-send-image" type="button">
+                    <!-- Replace svg with image -->
+                    <svg
+                      class="bi bi-file-image"
+                      fill="currentColor"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M8.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                      <path
+                        d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v8l-2.083-2.083a.5.5 0 0 0-.76.063L8 11 5.835 9.7a.5.5 0 0 0-.611.076L3 12V2z"
+                      />
+                    </svg>
+                  </button>
+                        </form>
+               <!-- <label for="chat-input-message">Send: </label> -->
+              <textarea id = "chat-input-message" class="form-control type_msg" placeholder="Type your message..."></textarea>
+              <!--  <input id="chat-input-message" /> -->
+                <button id="chat-send-message" type="button">
                   <!-- Replace svg with image -->
+
                   <svg
-                    class="bi bi-file-image"
+                    class="bi bi-send-fill"
                     fill="currentColor"
                     height="16"
                     viewBox="0 0 16 16"
                     width="16"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path d="M8.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
                     <path
-                      d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v8l-2.083-2.083a.5.5 0 0 0-.76.063L8 11 5.835 9.7a.5.5 0 0 0-.611.076L3 12V2z"
+                      d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89.471-1.178-1.178.471L5.93 9.363l.338.215a.5.5 0 0 1 .154.154l.215.338 7.494-7.494Z"
+                      fill-rule="evenodd"
                     />
                   </svg>
                 </button>
-                      </form>
 
-              <label for="chat-input-message">Send: </label>
-              <input id="chat-input-message" />
-              <button id="chat-send-message" type="button">
-                <!-- Replace svg with image -->
-                <svg
-                  class="bi bi-send-fill"
-                  fill="currentColor"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89.471-1.178-1.178.471L5.93 9.363l.338.215a.5.5 0 0 1 .154.154l.215.338 7.494-7.494Z"
-                    fill-rule="evenodd"
-                  />
-                </svg>
-              </button>
+
+
+
+              </div>
+
+
+
+
+
+
             </div>
           </div>
         </div>

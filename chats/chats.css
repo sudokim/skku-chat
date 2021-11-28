@@ -133,9 +133,14 @@ color: rgba(255,255,255,0.6);
   }
 
 
+#chat-room-list-header{
+  width: 300px;
+}
 
+ /* #chat-input-message{
+  width: 100%;
 
-
+} */
 
 .chat-room-item {
   border: black solid 1px;
