@@ -4,8 +4,10 @@
 
 Access here: https://sudokim.github.io/skku-web-chat
 
+# Demo Video
+[Demo Video Link](https://www.youtube.com/watch?v=aMtrUmNr1gA).
 
-# Demo
+# Demo Screenshots
 ![Sign in screen](screenshots/ss1.png)
 ![Profile screen](screenshots/ss2.png)
 ![Chat screen](screenshots/ss3.png)
