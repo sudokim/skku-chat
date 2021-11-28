@@ -1,28 +1,64 @@
 import { app } from '../src/firebase';
 import * as auth from '../src/firebase-auth';
 
-const login = () => {
+// Sign in
+function login() {
   const signinBtn = document.getElementById('signin-btn');
-  signinBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-  Signing in`;
+  signinBtn.innerHTML =
+    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Signing in';
+
   const log = document.querySelector('.login-message');
   log.innerHTML = '';
+
+  // Call script
   auth
     .authSignIn(app, document.getElementById('signin-email').value, document.getElementById('signin-pw').value)
-    .then((resolve) => {
-      if (!resolve) {
-        log.innerHTML = 'Either email address or username is wrong.';
+    .then((uc) => {
+      // Valid email and password
+      // Check if the user validated the email
+      if (!uc.user.emailVerified) {
+        if (
+          confirm(
+            'You have not verified your email address yet.\nCheck your inbox and click the link from the email to verify your account.\nDo you want to receive the verification email again?'
+          )
+        ) {
+          // Resend email
+          auth
+            .authSendVerificationEmail(app)
+            .then(alert)
+            .catch(alert)
+            .finally(() => {
+              auth
+                .authSignOut(app)
+                .then(() => document.location.reload())
+                .catch(alert);
+            });
+        } else {
+          // Sign out
+          auth
+            .authSignOut(app)
+            .then(() => document.location.reload())
+            .catch(alert);
+        }
       } else {
+        // Valid email
         document.location.href = '../profile/profile.html';
+        signinBtn.innerHTML = 'Sign in';
       }
+
       signinBtn.innerHTML = 'Sign in';
     })
     .catch(alert);
-};
-const signup = () => {
+}
+
+// Sign up
+function signup() {
+  const signupBtn = document.getElementById('signup-btn')
   const username = document.getElementById('username').value;
   const domain = document.getElementById('domain').value;
   const email = username + '@' + domain;
+
+  signupBtn.innerHTML= '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Signing up...'
 
   auth
     .authSignUp(
@@ -33,10 +69,16 @@ const signup = () => {
       document.getElementById('signup-id').value
     )
     .then((uc) => {
-      document.location.href = '../profile/profile.html';
+      // Verify email
+      auth.authSendVerificationEmail(app).then((msg) => {
+        alert(msg);
+        auth.authSignOut(app).then(() => document.location.reload());
+      });
     })
     .catch(alert);
-};
+
+  signupBtn.innerHTML = "Sign Up"
+}
 
 const forgotPassword = async () => {
   const username = document.getElementById('forgot-password-username').value;
