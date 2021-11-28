@@ -80,6 +80,7 @@ export async function authSignIn(app_, email_, password_) {
       const errorMessage = error.message;
       alert('Error during sign in\n(' + err.code + ') ' + err.message);
     });
+    return success;
 }
 
 /**
