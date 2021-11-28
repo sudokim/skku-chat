@@ -5,6 +5,14 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+
+  sendPasswordResetEmail,
+  sendSignInLinkToEmail,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged,
+  signInWithEmailLink,
+  isSignInWithEmailLink,
   updateProfile,
 } from 'firebase/auth';
 import { get, getDatabase, ref, set } from 'firebase/database';
@@ -93,6 +101,7 @@ export async function authSignIn(app_, email_, password_) {
       })
       .catch((err) => reject(err.message));
   });
+
 }
 
 /**
@@ -137,23 +146,29 @@ export async function authSignOut(app_) {
  * @param app_ Firebase application reference
  * @returns {Promise<void | string>} A promise for the result, or an error message
  */
-export async function authDeleteUser(app_) {
+
+export function authDeleteUser(app_) {
   const auth = getAuth(app_);
   const user = auth.currentUser;
 
-  return new Promise((resolve, reject) => {
-    if (user) {
-      deleteUser(user)
-        .then(resolve)
-        .catch((err) => reject(err.message));
-    } else {
-      reject('User not signed in');
-    }
-  });
+  if (user) {
+    // User logged in -> delete
+    deleteUser(user)
+      .then(() => {
+        alert('Your account has been successfully deleted');
+        document.location.href = '../auth-test/signin.html';
+      })
+      .catch((err) => {
+        alert('Error during user deletion\n(' + err.code + ') ' + err.message);
+      });
+  } else {
+    // User not logged in
+    alert('User not logged in');
+  }
 }
 
 /**
- * Sign up for a new account
+ * Send Password Reset Email
  * @param app_ Firebase application reference
  * @param email_ Email address of the user
  */
@@ -175,4 +190,120 @@ export async function authForgotPassword(app_, email_) {
 export function authGetUserUID(app_) {
   const auth = getAuth(app_);
   return auth.currentUser.displayName;
+}
+
+/**
+ * Send Passwordless Sign-in Link
+ * @param app_ Firebase application reference
+ * @param email_ Email address of the user
+ */
+
+export async function authPWLessSignIn(app_, email_) {
+  const actionCodeSettings = {
+    url: 'http://localhost:5500/profile/profile.html',
+    handleCodeInApp: true,
+  };
+
+  const auth = getAuth(app_);
+  let success;
+
+  await sendSignInLinkToEmail(auth, email_, actionCodeSettings)
+    .then(() => {
+      window.localStorage.setItem('emailForSignIn', email_);
+      success = true;
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert('errorCode: ' + errorCode + '\n errorMessage:' + errorMessage);
+      success = false;
+    });
+  return success;
+}
+
+/**
+ * Check Sign-in status
+ * @param app_ Firebase application reference
+ * @param loadContents Page contents load reference
+ */
+
+export async function checkSignin(app_, loadContents) {
+  const auth = getAuth(app_);
+
+  await onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      // alert('Hello ' + user.email);
+      loadContents();
+    } else {
+      await isPasswordless(app_).then((resolve) => {
+        if (resolve) {
+        } else {
+          document.location.href = '../auth-test/signin.html';
+        }
+      });
+    }
+  });
+}
+
+/**
+ * Check if the user logged through Passwordless sign-in
+ * @param app_ Firebase application reference
+ */
+
+export async function isPasswordless(app_) {
+  const auth = getAuth(app_);
+  let success;
+  if (isSignInWithEmailLink(auth, window.location.href)) {
+    let email = window.localStorage.getItem('emailForSignIn');
+    if (!email) {
+      email = window.prompt('Please provide your email for confirmation');
+    }
+
+    await signInWithEmailLink(auth, email, window.location.href)
+      .then((result) => {
+        console.log(result);
+
+        window.localStorage.removeItem('emailForSignIn');
+        onAuthStateChanged(auth, (user) => {
+          console.log(user);
+        });
+        success = true;
+      })
+      .catch((error) => {
+        console.log(error);
+        success = false;
+      });
+  } else {
+    success = false;
+  }
+  return success;
+}
+
+/**
+ * Change display name of a user
+ * @param app_ Firebase application reference
+ * @param name_ Input name for name change
+ */
+
+export async function changeDisplayName(app_, name_) {
+  const auth = getAuth(app_);
+  await updateProfile(auth.currentUser, {
+    displayName: name_,
+  })
+    .then(() => {
+      console.log('displayName changed');
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+/**
+ * Refresh contents of the page upon change
+ * @param app_ Firebase application reference
+ */
+
+export function refreshContents(app_) {
+  const auth = getAuth(app_);
+  return auth.currentUser;
 }

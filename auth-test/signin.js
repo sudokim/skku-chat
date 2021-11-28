@@ -51,7 +51,7 @@ const forgotPassword = async () => {
     if (!resolve) {
       forgotMessage.innerHTML = "This email doesn't exist.";
     } else {
-      document.querySelector('.sent-message').innerHTML = 'Password reset link sent.';
+      document.querySelector('.sent-message').innerHTML = 'Password reset link has been sent.';
     }
   });
 };
@@ -61,11 +61,38 @@ const clearForgotMessage = () => {
   forgotMessage.innerHTML = '';
 };
 
+const clearPWlessMessage = () => {
+  const PWlessMessage = document.getElementById('passwordless-message');
+  const PWlessSentMessage = document.getElementById('passwordless-sent-message');
+
+  PWlessMessage.innerHTML = '';
+  PWlessSentMessage.innerHTML = '';
+};
+
+const pwlessSignIn = async () => {
+  const username = document.getElementById('passwordless-username').value;
+  const domain = document.getElementById('passwordless-domain').value;
+  const pwlessMessage = document.getElementById('passwordless-message');
+  const PWlessSentMessage = document.getElementById('passwordless-sent-message');
+  if (!username || !domain) {
+    pwlessMessage.innerHTML = 'Please enter a valid email address.';
+    return;
+  }
+  const email = username + '@' + domain;
+  auth.authPWLessSignIn(app, email).then((resolve) => {
+    if (!resolve) {
+      pwlessMessage.innerHTML = "This email doesn't exist.";
+    } else {
+      PWlessSentMessage.innerHTML = 'Sign-in link has been sent.';
+    }
+  });
+};
+
 document.getElementById('signin-btn').addEventListener('click', login);
-
 document.getElementById('signup-btn').addEventListener('click', signup);
-
 document.getElementById('forgot-password-btn').addEventListener('click', forgotPassword);
-
 document.getElementById('forgot-password-username').addEventListener('input', clearForgotMessage);
 document.getElementById('forgot-password-domain').addEventListener('change', clearForgotMessage);
+document.getElementById('passwordless-btn').addEventListener('click', pwlessSignIn);
+document.getElementById('passwordless-username').addEventListener('input', clearPWlessMessage);
+document.getElementById('passwordless-domain').addEventListener('change', clearPWlessMessage);
