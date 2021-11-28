@@ -4,7 +4,9 @@
 
 
 # Demo
-Post gif here
+![Sign in screen](screenshots/ss1.png)
+![Profile screen](screenshots/ss2.png)
+![Chat screen](screenshots/ss3.png)
 
 # Build
 
