@@ -1,6 +1,7 @@
 import { app } from '../src/firebase';
 import * as auth from '../src/firebase-auth';
 import * as rdb from '../src/firebase-rdb';
+import * as storage from '../src/firebase-storage';
 
 let currentUser;
 let name;
@@ -38,12 +39,16 @@ const displayChatrooms = async (joinedRooms) => {
             lastMessageUser = resolve;
           });
         }
+        let imageURL;
         if (lastMessageUser && lastMessage.message) {
+          await rdb.rdbGetImageURL(app, friendID).then((resolve) => {
+            imageURL = resolve;
+          });
           document.getElementById('recent-chats').innerHTML += `<li class="list-group-item">
           <div class="contact-wrapper">
             <div class="contact-pic">
               <img
-                src=""
+                src="${imageURL}"
                 alt=""
                 onerror="this.src='https://www.royalunibrew.com/wp-content/uploads/2021/07/blank-profile-picture-973460_640.png'"
               />
@@ -55,11 +60,14 @@ const displayChatrooms = async (joinedRooms) => {
           </div>
         </li>`;
         } else if (lastMessageUser && lastMessage.image) {
+          await rdb.rdbGetImageURL(app, friendID).then((resolve) => {
+            imageURL = resolve;
+          });
           document.getElementById('recent-chats').innerHTML += `<li class="list-group-item">
           <div class="contact-wrapper">
             <div class="contact-pic">
               <img
-                src=""
+                src="${imageURL}"
                 alt=""
                 onerror="this.src='https://www.royalunibrew.com/wp-content/uploads/2021/07/blank-profile-picture-973460_640.png'"
               />
@@ -90,11 +98,17 @@ const loadContents = async () => {
   });
   document.getElementById('user-display-name').value = name;
   document.getElementById('header-display-name').innerHTML = name;
+  // if (currentUser.photoURL) document.getElementById('user-profile-picture').src = currentUser.photoURL;
   let joinedRooms;
   await rdb.rdbGetUserJoinedChatRooms(app, ID).then((resolve) => {
     joinedRooms = resolve;
   });
   displayChatrooms(joinedRooms);
+  let imageURL;
+  await rdb.rdbGetImageURL(app, currentUser.displayName).then((resolve) => {
+    imageURL = resolve;
+  });
+  if (imageURL) document.getElementById('user-profile-picture').src = imageURL;
 };
 
 const changeDisplayName = async () => {
@@ -114,6 +128,34 @@ const goToChatroom = () => {
   document.location.href = '../chats/chats.html';
 };
 
+const setProfilePicURL = async (user_) => {
+  let imagePath = '/profile_pictures/' + user_.displayName + '.jpeg';
+  await storage
+    .storageGetURL(app, imagePath)
+    .then((imageURL) => {
+      user_.photoURL = imageURL;
+      rdb.rdbUpdateImage(app, user_.displayName, imageURL);
+      loadContents();
+    })
+    .catch();
+};
+
+const uploadPicture = async () => {
+  const filePath = document.getElementById('picture-input').value;
+  const fileExtension = filePath.substring(filePath.lastIndexOf('.'));
+  await storage
+    .storageUpload(
+      app,
+      document.getElementById('picture-input').files[0],
+      'profile_pictures/' + currentUser.displayName + fileExtension
+    )
+    .then(async (imageRef) => {
+      console.log(imageRef);
+      setProfilePicURL(currentUser);
+    })
+    .catch();
+};
+
 window.onload = function () {
   auth.checkSignin(app, loadContents);
 };
@@ -131,3 +173,4 @@ document.getElementById('delete-account-btn').addEventListener('click', () => {
 document.getElementById('go-to-chatroom-btn').addEventListener('click', goToChatroom);
 document.getElementById('change-display-name-btn').addEventListener('click', changeDisplayName);
 document.getElementById('reset-password-btn').addEventListener('click', resetPassword);
+document.getElementById('picture-input').addEventListener('change', uploadPicture);

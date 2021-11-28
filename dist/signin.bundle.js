@@ -2,10 +2,380 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./node_modules/@firebase/auth/dist/esm2017/index-8593558d.js":
-/*!********************************************************************!*\
-  !*** ./node_modules/@firebase/auth/dist/esm2017/index-8593558d.js ***!
-  \********************************************************************/
+/***/ "./src/firebase-auth.js":
+/*!******************************!*\
+  !*** ./src/firebase-auth.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "authSignUp": () => (/* binding */ authSignUp),
+/* harmony export */   "authSignIn": () => (/* binding */ authSignIn),
+/* harmony export */   "authSignInStatus": () => (/* binding */ authSignInStatus),
+/* harmony export */   "authSignOut": () => (/* binding */ authSignOut),
+/* harmony export */   "authDeleteUser": () => (/* binding */ authDeleteUser),
+/* harmony export */   "authForgotPassword": () => (/* binding */ authForgotPassword),
+/* harmony export */   "authGetUserUID": () => (/* binding */ authGetUserUID),
+/* harmony export */   "authPWLessSignIn": () => (/* binding */ authPWLessSignIn),
+/* harmony export */   "checkSignin": () => (/* binding */ checkSignin),
+/* harmony export */   "isPasswordless": () => (/* binding */ isPasswordless),
+/* harmony export */   "changeDisplayName": () => (/* binding */ changeDisplayName),
+/* harmony export */   "refreshContents": () => (/* binding */ refreshContents),
+/* harmony export */   "authSendVerificationEmail": () => (/* binding */ authSendVerificationEmail)
+/* harmony export */ });
+/* harmony import */ var firebase_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/auth */ "../../node_modules/firebase/auth/dist/index.esm.js");
+/* harmony import */ var firebase_database__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! firebase/database */ "../../node_modules/firebase/database/dist/index.esm.js");
+
+
+
+/**
+ * Sign up for a new account
+ *
+ * @param app_ Firebase application reference
+ * @param email_{string} Email address of the user
+ * @param password_{string} Password of the user
+ * @param name_{string} Name of the user
+ * @param id_{string} ID of the user
+ * @returns {Promise<UserCredential | string>} A promise of an UserCredential of the new account, or an error message
+ */
+function authSignUp(app_, email_, password_, name_, id_) {
+  // Email validity check
+  const skku_domain = ['skku.edu', 'g.skku.edu', 'o365.skku.edu'];
+  const re =
+    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.exec(
+      email_
+    );
+
+  return new Promise((resolve, reject) => {
+    if (re !== null && skku_domain.includes(re[0].split('@')[1])) {
+      // Valid email used, proceed with sign up
+      const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+      // Check if id is unique
+      const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.getDatabase)(app_);
+      const accountRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.ref)(db, 'users/' + id_ + '/');
+      let isUserIdValid = true;
+
+      (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.get)(accountRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            reject('ID already in use');
+            isUserIdValid = false;
+          }
+
+          if (isUserIdValid) {
+            (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.createUserWithEmailAndPassword)(auth, email_, password_)
+              .then((uc) => {
+                // Update database structure
+                // Object for new user
+                let newUserUpdate = {
+                  email: email_,
+                  name: name_,
+                  joined_rooms: {},
+                  profile_image: '',
+                  status_message: '',
+                };
+
+                const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.getDatabase)(app_);
+                const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.ref)(db, 'users/' + id_ + '/');
+
+                Promise.all([(0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.updateProfile)(uc.user, { displayName: id_ }), (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.set)(userRef, newUserUpdate)]).then(() => {
+                  resolve(uc);
+                });
+              })
+              .catch((err) => reject(err.message));
+          }
+        })
+        .catch((err) => alert(err.message));
+    } else {
+      // Invalid email used
+      reject('Email address not valid');
+    }
+  });
+}
+
+/**
+ * Sign in to an account
+ *
+ * @param app_ Firebase application reference
+ * @param email_ Email address
+ * @param password_ Password
+ * @returns {Promise<UserCredential | string>} A promise of an UserCredential, or an error message
+ */
+async function authSignIn(app_, email_, password_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signInWithEmailAndPassword)(auth, email_, password_)
+      .then((uc) => {
+        resolve(uc);
+      })
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Check if the user is currently signed in
+ *
+ * @param app_ Firebase application reference
+ * @returns {boolean} Boolean value of whether the user is signed in
+ */
+function authSignInStatus(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  const user = auth.currentUser;
+
+  return user !== null;
+}
+
+/**
+ * Sign out from the app
+ *
+ * @param app_ Firebase application reference
+ * @returns {Promise<void | string>} A promise of the result, or an error message
+ */
+async function authSignOut(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  const user = auth.currentUser;
+
+  return new Promise((resolve, reject) => {
+    if (user) {
+      // User signed in
+      (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signOut)(auth)
+        .then(resolve)
+        .catch((err) => reject(err.message));
+    } else {
+      reject('User not signed in');
+    }
+  });
+}
+
+/**
+ * Delete an user
+ * Make sure to confirm the user again!
+ *
+ * @param app_ Firebase application reference
+ * @returns {Promise<void | string>} A promise for the result, or an error message
+ */
+function authDeleteUser(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  const user = auth.currentUser;
+
+  if (user) {
+    // User logged in -> delete
+    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.deleteUser)(user)
+      .then(() => {
+        alert('Your account has been successfully deleted');
+        document.location.href = '../auth-test/signin.html';
+      })
+      .catch((err) => {
+        alert('Error during user deletion\n(' + err.code + ') ' + err.message);
+      });
+  } else {
+    // User not logged in
+    alert('User not logged in');
+  }
+}
+
+/**
+ * Send Password Reset Email
+ * @param app_ Firebase application reference
+ * @param email_ Email address of the user
+ */
+async function authForgotPassword(app_, email_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendPasswordResetEmail)(auth, email_)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Get the uid of the user
+ * @param app_ Firebase application reference
+ * @returns {string} User's uid
+ */
+function authGetUserUID(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  return auth.currentUser.displayName;
+}
+
+/**
+ * Send Passwordless Sign-in Link
+ * @param app_ Firebase application reference
+ * @param email_ Email address of the user
+ */
+async function authPWLessSignIn(app_, email_) {
+  const actionCodeSettings = {
+    url: 'http://localhost:5500/profile/profile.html',
+    handleCodeInApp: true,
+  };
+
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  let success;
+
+  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendSignInLinkToEmail)(auth, email_, actionCodeSettings)
+    .then(() => {
+      window.localStorage.setItem('emailForSignIn', email_);
+      success = true;
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert('errorCode: ' + errorCode + '\n errorMessage:' + errorMessage);
+      success = false;
+    });
+  return success;
+}
+
+/**
+ * Check Sign-in status
+ * @param app_ Firebase application reference
+ * @param loadContents Page contents load reference
+ */
+async function checkSignin(app_, loadContents) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.onAuthStateChanged)(auth, async (user) => {
+    if (user) {
+      // alert('Hello ' + user.email);
+      loadContents();
+    } else {
+      await isPasswordless(app_).then((resolve) => {
+        if (resolve) {
+        } else {
+          document.location.href = '../auth-test/signin.html';
+        }
+      });
+    }
+  });
+}
+
+/**
+ * Check if the user logged through Passwordless sign-in
+ * @param app_ Firebase application reference
+ */
+async function isPasswordless(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  let success;
+  if ((0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.isSignInWithEmailLink)(auth, window.location.href)) {
+    let email = window.localStorage.getItem('emailForSignIn');
+    if (!email) {
+      email = window.prompt('Please provide your email for confirmation');
+    }
+
+    await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signInWithEmailLink)(auth, email, window.location.href)
+      .then((result) => {
+        console.log(result);
+
+        window.localStorage.removeItem('emailForSignIn');
+        (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.onAuthStateChanged)(auth, (user) => {
+          console.log(user);
+        });
+        success = true;
+      })
+      .catch((error) => {
+        console.log(error);
+        success = false;
+      });
+  } else {
+    success = false;
+  }
+  return success;
+}
+
+/**
+ * Change display name of a user
+ * @param app_ Firebase application reference
+ * @param name_ Input name for name change
+ */
+async function changeDisplayName(app_, name_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.updateProfile)(auth.currentUser, {
+    displayName: name_,
+  })
+    .then(() => {
+      console.log('displayName changed');
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+/**
+ * Refresh contents of the page upon change
+ * @param app_ Firebase application reference
+ */
+function refreshContents(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  return auth.currentUser;
+}
+
+/**
+ * Send a verification email to new user
+ * @param app_ Firebase application reference
+ * @returns {Promise<string>} A promise of a result message
+ */
+async function authSendVerificationEmail(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+  return new Promise((resolve, reject) => {
+    if (!auth.currentUser.emailVerified) {
+      (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendEmailVerification)(auth.currentUser)
+        .then(() => resolve('Sent a verification email to\n' + auth.currentUser.email))
+        .catch((err) => reject(err.message));
+    } else reject('Email already verified');
+  });
+}
+
+
+/***/ }),
+
+/***/ "./src/firebase.js":
+/*!*************************!*\
+  !*** ./src/firebase.js ***!
+  \*************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "app": () => (/* binding */ app)
+/* harmony export */ });
+/* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/app */ "../../node_modules/firebase/app/dist/index.esm.js");
+// Initialize Firebase app with API key of our app
+
+
+/**
+ * API Keys for Firebase Application
+ * @type {{storageBucket: string, apiKey: string, messagingSenderId: string, appId: string, projectId: string, databaseURL: string, authDomain: string}}
+ */
+const firebaseConfig = {
+    apiKey: "AIzaSyBxDGM7VmgHG-Yvy6LPuKDT3C3JIArHPkg",
+    authDomain: "skku-web-chat.firebaseapp.com",
+    databaseURL: "https://skku-web-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "skku-web-chat",
+    storageBucket: "skku-web-chat.appspot.com",
+    messagingSenderId: "1006166323603",
+    appId: "1:1006166323603:web:35ac99e8c5e83faa55f866",
+};
+
+/**
+ * Application reference for accessing Firebase
+ * @type {FirebaseApp}
+ */
+const app = (0,firebase_app__WEBPACK_IMPORTED_MODULE_0__.initializeApp)(firebaseConfig);
+
+
+
+
+/***/ }),
+
+/***/ "../../node_modules/@firebase/auth/dist/esm2017/index-8593558d.js":
+/*!************************************************************************!*\
+  !*** ../../node_modules/@firebase/auth/dist/esm2017/index-8593558d.js ***!
+  \************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -111,11 +481,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "y": () => (/* binding */ deleteUser),
 /* harmony export */   "z": () => (/* binding */ debugErrorMap)
 /* harmony export */ });
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
-/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/app */ "./node_modules/@firebase/app/dist/esm/index.esm2017.js");
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
-/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/logger */ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/component */ "./node_modules/@firebase/component/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/app */ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/logger */ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/component */ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js");
 
 
 
@@ -9435,10 +9805,10 @@ registerAuth("Browser" /* BROWSER */);
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/auth/dist/esm2017/index.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/@firebase/auth/dist/esm2017/index.js ***!
-  \***********************************************************/
+/***/ "../../node_modules/@firebase/auth/dist/esm2017/index.js":
+/*!***************************************************************!*\
+  !*** ../../node_modules/@firebase/auth/dist/esm2017/index.js ***!
+  \***************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -9522,11 +9892,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "verifyBeforeUpdateEmail": () => (/* reexport safe */ _index_8593558d_js__WEBPACK_IMPORTED_MODULE_0__.ab),
 /* harmony export */   "verifyPasswordResetCode": () => (/* reexport safe */ _index_8593558d_js__WEBPACK_IMPORTED_MODULE_0__.a3)
 /* harmony export */ });
-/* harmony import */ var _index_8593558d_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index-8593558d.js */ "./node_modules/@firebase/auth/dist/esm2017/index-8593558d.js");
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
-/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/app */ "./node_modules/@firebase/app/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/logger */ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @firebase/component */ "./node_modules/@firebase/component/dist/esm/index.esm2017.js");
+/* harmony import */ var _index_8593558d_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index-8593558d.js */ "../../node_modules/@firebase/auth/dist/esm2017/index-8593558d.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/app */ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/logger */ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @firebase/component */ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js");
 
 
 
@@ -9538,10 +9908,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/database/dist/index.esm2017.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/@firebase/database/dist/index.esm2017.js ***!
-  \***************************************************************/
+/***/ "../../node_modules/@firebase/database/dist/index.esm2017.js":
+/*!*******************************************************************!*\
+  !*** ../../node_modules/@firebase/database/dist/index.esm2017.js ***!
+  \*******************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -9598,10 +9968,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "startAt": () => (/* binding */ startAt),
 /* harmony export */   "update": () => (/* binding */ update)
 /* harmony export */ });
-/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "./node_modules/@firebase/app/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/component */ "./node_modules/@firebase/component/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
-/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/logger */ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/component */ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/logger */ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js");
 
 
 
@@ -23574,10 +23944,10 @@ registerDatabase();
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/util/dist/index.esm2017.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/@firebase/util/dist/index.esm2017.js ***!
-  \***********************************************************/
+/***/ "../../node_modules/@firebase/util/dist/index.esm2017.js":
+/*!***************************************************************!*\
+  !*** ../../node_modules/@firebase/util/dist/index.esm2017.js ***!
+  \***************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -25539,10 +25909,10 @@ function getModularInstance(service) {
 
 /***/ }),
 
-/***/ "./node_modules/firebase/app/dist/index.esm.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/firebase/app/dist/index.esm.js ***!
-  \*****************************************************/
+/***/ "../../node_modules/firebase/app/dist/index.esm.js":
+/*!*********************************************************!*\
+  !*** ../../node_modules/firebase/app/dist/index.esm.js ***!
+  \*********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -25566,7 +25936,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "registerVersion": () => (/* reexport safe */ _firebase_app__WEBPACK_IMPORTED_MODULE_0__.registerVersion),
 /* harmony export */   "setLogLevel": () => (/* reexport safe */ _firebase_app__WEBPACK_IMPORTED_MODULE_0__.setLogLevel)
 /* harmony export */ });
-/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "./node_modules/@firebase/app/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js");
 
 
 
@@ -25595,10 +25965,10 @@ var version = "9.5.0";
 
 /***/ }),
 
-/***/ "./node_modules/firebase/auth/dist/index.esm.js":
-/*!******************************************************!*\
-  !*** ./node_modules/firebase/auth/dist/index.esm.js ***!
-  \******************************************************/
+/***/ "../../node_modules/firebase/auth/dist/index.esm.js":
+/*!**********************************************************!*\
+  !*** ../../node_modules/firebase/auth/dist/index.esm.js ***!
+  \**********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -25682,17 +26052,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "verifyBeforeUpdateEmail": () => (/* reexport safe */ _firebase_auth__WEBPACK_IMPORTED_MODULE_0__.verifyBeforeUpdateEmail),
 /* harmony export */   "verifyPasswordResetCode": () => (/* reexport safe */ _firebase_auth__WEBPACK_IMPORTED_MODULE_0__.verifyPasswordResetCode)
 /* harmony export */ });
-/* harmony import */ var _firebase_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/auth */ "./node_modules/@firebase/auth/dist/esm2017/index.js");
+/* harmony import */ var _firebase_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/auth */ "../../node_modules/@firebase/auth/dist/esm2017/index.js");
 
 //# sourceMappingURL=index.esm.js.map
 
 
 /***/ }),
 
-/***/ "./node_modules/firebase/database/dist/index.esm.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/firebase/database/dist/index.esm.js ***!
-  \**********************************************************/
+/***/ "../../node_modules/firebase/database/dist/index.esm.js":
+/*!**************************************************************!*\
+  !*** ../../node_modules/firebase/database/dist/index.esm.js ***!
+  \**************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -25749,17 +26119,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "startAt": () => (/* reexport safe */ _firebase_database__WEBPACK_IMPORTED_MODULE_0__.startAt),
 /* harmony export */   "update": () => (/* reexport safe */ _firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)
 /* harmony export */ });
-/* harmony import */ var _firebase_database__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/database */ "./node_modules/@firebase/database/dist/index.esm2017.js");
+/* harmony import */ var _firebase_database__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/database */ "../../node_modules/@firebase/database/dist/index.esm2017.js");
 
 //# sourceMappingURL=index.esm.js.map
 
 
 /***/ }),
 
-/***/ "./node_modules/tslib/tslib.es6.js":
-/*!*****************************************!*\
-  !*** ./node_modules/tslib/tslib.es6.js ***!
-  \*****************************************/
+/***/ "../../node_modules/tslib/tslib.es6.js":
+/*!*********************************************!*\
+  !*** ../../node_modules/tslib/tslib.es6.js ***!
+  \*********************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -26032,380 +26402,10 @@ function __classPrivateFieldSet(receiver, state, value, kind, f) {
 
 /***/ }),
 
-/***/ "./src/firebase-auth.js":
-/*!******************************!*\
-  !*** ./src/firebase-auth.js ***!
-  \******************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "authSignUp": () => (/* binding */ authSignUp),
-/* harmony export */   "authSignIn": () => (/* binding */ authSignIn),
-/* harmony export */   "authSignInStatus": () => (/* binding */ authSignInStatus),
-/* harmony export */   "authSignOut": () => (/* binding */ authSignOut),
-/* harmony export */   "authDeleteUser": () => (/* binding */ authDeleteUser),
-/* harmony export */   "authForgotPassword": () => (/* binding */ authForgotPassword),
-/* harmony export */   "authGetUserUID": () => (/* binding */ authGetUserUID),
-/* harmony export */   "authPWLessSignIn": () => (/* binding */ authPWLessSignIn),
-/* harmony export */   "checkSignin": () => (/* binding */ checkSignin),
-/* harmony export */   "isPasswordless": () => (/* binding */ isPasswordless),
-/* harmony export */   "changeDisplayName": () => (/* binding */ changeDisplayName),
-/* harmony export */   "refreshContents": () => (/* binding */ refreshContents),
-/* harmony export */   "authSendVerificationEmail": () => (/* binding */ authSendVerificationEmail)
-/* harmony export */ });
-/* harmony import */ var firebase_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/auth */ "./node_modules/firebase/auth/dist/index.esm.js");
-/* harmony import */ var firebase_database__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! firebase/database */ "./node_modules/firebase/database/dist/index.esm.js");
-
-
-
-/**
- * Sign up for a new account
- *
- * @param app_ Firebase application reference
- * @param email_{string} Email address of the user
- * @param password_{string} Password of the user
- * @param name_{string} Name of the user
- * @param id_{string} ID of the user
- * @returns {Promise<UserCredential | string>} A promise of an UserCredential of the new account, or an error message
- */
-function authSignUp(app_, email_, password_, name_, id_) {
-  // Email validity check
-  const skku_domain = ['skku.edu', 'g.skku.edu', 'o365.skku.edu'];
-  const re =
-    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.exec(
-      email_
-    );
-
-  return new Promise((resolve, reject) => {
-    if (re !== null && skku_domain.includes(re[0].split('@')[1])) {
-      // Valid email used, proceed with sign up
-      const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-      // Check if id is unique
-      const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.getDatabase)(app_);
-      const accountRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.ref)(db, 'users/' + id_ + '/');
-      let isUserIdValid = true;
-
-      (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.get)(accountRef)
-        .then((snapshot) => {
-          if (snapshot.exists()) {
-            reject('ID already in use');
-            isUserIdValid = false;
-          }
-
-          if (isUserIdValid) {
-            (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.createUserWithEmailAndPassword)(auth, email_, password_)
-              .then((uc) => {
-                // Update database structure
-                // Object for new user
-                let newUserUpdate = {
-                  email: email_,
-                  name: name_,
-                  joined_rooms: {},
-                  profile_image: '',
-                  status_message: '',
-                };
-
-                const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.getDatabase)(app_);
-                const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.ref)(db, 'users/' + id_ + '/');
-
-                Promise.all([(0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.updateProfile)(uc.user, { displayName: id_ }), (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.set)(userRef, newUserUpdate)]).then(() => {
-                  resolve(uc);
-                });
-              })
-              .catch((err) => reject(err.message));
-          }
-        })
-        .catch((err) => alert(err.message));
-    } else {
-      // Invalid email used
-      reject('Email address not valid');
-    }
-  });
-}
-
-/**
- * Sign in to an account
- *
- * @param app_ Firebase application reference
- * @param email_ Email address
- * @param password_ Password
- * @returns {Promise<UserCredential | string>} A promise of an UserCredential, or an error message
- */
-async function authSignIn(app_, email_, password_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signInWithEmailAndPassword)(auth, email_, password_)
-      .then((uc) => {
-        resolve(uc);
-      })
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Check if the user is currently signed in
- *
- * @param app_ Firebase application reference
- * @returns {boolean} Boolean value of whether the user is signed in
- */
-function authSignInStatus(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  const user = auth.currentUser;
-
-  return user !== null;
-}
-
-/**
- * Sign out from the app
- *
- * @param app_ Firebase application reference
- * @returns {Promise<void | string>} A promise of the result, or an error message
- */
-async function authSignOut(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  const user = auth.currentUser;
-
-  return new Promise((resolve, reject) => {
-    if (user) {
-      // User signed in
-      (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signOut)(auth)
-        .then(resolve)
-        .catch((err) => reject(err.message));
-    } else {
-      reject('User not signed in');
-    }
-  });
-}
-
-/**
- * Delete an user
- * Make sure to confirm the user again!
- *
- * @param app_ Firebase application reference
- * @returns {Promise<void | string>} A promise for the result, or an error message
- */
-function authDeleteUser(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  const user = auth.currentUser;
-
-  if (user) {
-    // User logged in -> delete
-    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.deleteUser)(user)
-      .then(() => {
-        alert('Your account has been successfully deleted');
-        document.location.href = '../auth-test/signin.html';
-      })
-      .catch((err) => {
-        alert('Error during user deletion\n(' + err.code + ') ' + err.message);
-      });
-  } else {
-    // User not logged in
-    alert('User not logged in');
-  }
-}
-
-/**
- * Send Password Reset Email
- * @param app_ Firebase application reference
- * @param email_ Email address of the user
- */
-async function authForgotPassword(app_, email_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendPasswordResetEmail)(auth, email_)
-      .then(resolve)
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Get the uid of the user
- * @param app_ Firebase application reference
- * @returns {string} User's uid
- */
-function authGetUserUID(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  return auth.currentUser.displayName;
-}
-
-/**
- * Send Passwordless Sign-in Link
- * @param app_ Firebase application reference
- * @param email_ Email address of the user
- */
-async function authPWLessSignIn(app_, email_) {
-  const actionCodeSettings = {
-    url: 'http://localhost:5500/profile/profile.html',
-    handleCodeInApp: true,
-  };
-
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  let success;
-
-  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendSignInLinkToEmail)(auth, email_, actionCodeSettings)
-    .then(() => {
-      window.localStorage.setItem('emailForSignIn', email_);
-      success = true;
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      alert('errorCode: ' + errorCode + '\n errorMessage:' + errorMessage);
-      success = false;
-    });
-  return success;
-}
-
-/**
- * Check Sign-in status
- * @param app_ Firebase application reference
- * @param loadContents Page contents load reference
- */
-async function checkSignin(app_, loadContents) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.onAuthStateChanged)(auth, async (user) => {
-    if (user) {
-      // alert('Hello ' + user.email);
-      loadContents();
-    } else {
-      await isPasswordless(app_).then((resolve) => {
-        if (resolve) {
-        } else {
-          document.location.href = '../auth-test/signin.html';
-        }
-      });
-    }
-  });
-}
-
-/**
- * Check if the user logged through Passwordless sign-in
- * @param app_ Firebase application reference
- */
-async function isPasswordless(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  let success;
-  if ((0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.isSignInWithEmailLink)(auth, window.location.href)) {
-    let email = window.localStorage.getItem('emailForSignIn');
-    if (!email) {
-      email = window.prompt('Please provide your email for confirmation');
-    }
-
-    await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signInWithEmailLink)(auth, email, window.location.href)
-      .then((result) => {
-        console.log(result);
-
-        window.localStorage.removeItem('emailForSignIn');
-        (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.onAuthStateChanged)(auth, (user) => {
-          console.log(user);
-        });
-        success = true;
-      })
-      .catch((error) => {
-        console.log(error);
-        success = false;
-      });
-  } else {
-    success = false;
-  }
-  return success;
-}
-
-/**
- * Change display name of a user
- * @param app_ Firebase application reference
- * @param name_ Input name for name change
- */
-async function changeDisplayName(app_, name_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.updateProfile)(auth.currentUser, {
-    displayName: name_,
-  })
-    .then(() => {
-      console.log('displayName changed');
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-}
-
-/**
- * Refresh contents of the page upon change
- * @param app_ Firebase application reference
- */
-function refreshContents(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  return auth.currentUser;
-}
-
-/**
- * Send a verification email to new user
- * @param app_ Firebase application reference
- * @returns {Promise<string>} A promise of a result message
- */
-async function authSendVerificationEmail(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-  return new Promise((resolve, reject) => {
-    if (!auth.currentUser.emailVerified) {
-      (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendEmailVerification)(auth.currentUser)
-        .then(() => resolve('Sent a verification email to\n' + auth.currentUser.email))
-        .catch((err) => reject(err.message));
-    } else reject('Email already verified');
-  });
-}
-
-
-/***/ }),
-
-/***/ "./src/firebase.js":
-/*!*************************!*\
-  !*** ./src/firebase.js ***!
-  \*************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "app": () => (/* binding */ app)
-/* harmony export */ });
-/* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/app */ "./node_modules/firebase/app/dist/index.esm.js");
-// Initialize Firebase app with API key of our app
-
-
-/**
- * API Keys for Firebase Application
- * @type {{storageBucket: string, apiKey: string, messagingSenderId: string, appId: string, projectId: string, databaseURL: string, authDomain: string}}
- */
-const firebaseConfig = {
-    apiKey: "AIzaSyBxDGM7VmgHG-Yvy6LPuKDT3C3JIArHPkg",
-    authDomain: "skku-web-chat.firebaseapp.com",
-    databaseURL: "https://skku-web-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "skku-web-chat",
-    storageBucket: "skku-web-chat.appspot.com",
-    messagingSenderId: "1006166323603",
-    appId: "1:1006166323603:web:35ac99e8c5e83faa55f866",
-};
-
-/**
- * Application reference for accessing Firebase
- * @type {FirebaseApp}
- */
-const app = (0,firebase_app__WEBPACK_IMPORTED_MODULE_0__.initializeApp)(firebaseConfig);
-
-
-
-
-/***/ }),
-
-/***/ "./node_modules/@firebase/app/dist/esm/index.esm2017.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/@firebase/app/dist/esm/index.esm2017.js ***!
-  \**************************************************************/
+/***/ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js":
+/*!******************************************************************!*\
+  !*** ../../node_modules/@firebase/app/dist/esm/index.esm2017.js ***!
+  \******************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -26429,9 +26429,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "registerVersion": () => (/* binding */ registerVersion),
 /* harmony export */   "setLogLevel": () => (/* binding */ setLogLevel)
 /* harmony export */ });
-/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/component */ "./node_modules/@firebase/component/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/logger */ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/component */ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/logger */ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
 
 
 
@@ -27030,10 +27030,10 @@ registerCoreComponents('');
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/component/dist/esm/index.esm2017.js":
-/*!********************************************************************!*\
-  !*** ./node_modules/@firebase/component/dist/esm/index.esm2017.js ***!
-  \********************************************************************/
+/***/ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js":
+/*!************************************************************************!*\
+  !*** ../../node_modules/@firebase/component/dist/esm/index.esm2017.js ***!
+  \************************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -27042,7 +27042,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "ComponentContainer": () => (/* binding */ ComponentContainer),
 /* harmony export */   "Provider": () => (/* binding */ Provider)
 /* harmony export */ });
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
 
 
 /**
@@ -27456,10 +27456,10 @@ class ComponentContainer {
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/@firebase/logger/dist/esm/index.esm2017.js ***!
-  \*****************************************************************/
+/***/ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js":
+/*!*********************************************************************!*\
+  !*** ../../node_modules/@firebase/logger/dist/esm/index.esm2017.js ***!
+  \*********************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);

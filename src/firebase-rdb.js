@@ -426,3 +426,28 @@ export async function rdbChangeName(app_, userID, newName) {
       .catch((err) => reject(err.message));
   });
 }
+
+export async function rdbUpdateImage(app_, userID, imageURL) {
+  const db = getDatabase(app_);
+  const rootRef = ref(db, '/');
+
+  let updateObject = {};
+  updateObject['/users/' + userID + '/profile_image/'] = imageURL;
+
+  return new Promise((resolve, reject) => {
+    update(rootRef, updateObject)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+export async function rdbGetImageURL(app_, userID) {
+  const db = getDatabase(app_);
+  const userRef = ref(db, 'users/' + userID + '/profile_image/');
+
+  return new Promise((resolve, reject) => {
+    get(userRef)
+      .then((snapshot) => resolve(snapshot.val()))
+      .catch((err) => reject(err.message));
+  });
+}

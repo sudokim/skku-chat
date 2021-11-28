@@ -2,10 +2,973 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./node_modules/@firebase/auth/dist/esm2017/index-8593558d.js":
-/*!********************************************************************!*\
-  !*** ./node_modules/@firebase/auth/dist/esm2017/index-8593558d.js ***!
-  \********************************************************************/
+/***/ "./src/firebase-auth.js":
+/*!******************************!*\
+  !*** ./src/firebase-auth.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "authSignUp": () => (/* binding */ authSignUp),
+/* harmony export */   "authSignIn": () => (/* binding */ authSignIn),
+/* harmony export */   "authSignInStatus": () => (/* binding */ authSignInStatus),
+/* harmony export */   "authSignOut": () => (/* binding */ authSignOut),
+/* harmony export */   "authDeleteUser": () => (/* binding */ authDeleteUser),
+/* harmony export */   "authForgotPassword": () => (/* binding */ authForgotPassword),
+/* harmony export */   "authGetUserUID": () => (/* binding */ authGetUserUID),
+/* harmony export */   "authPWLessSignIn": () => (/* binding */ authPWLessSignIn),
+/* harmony export */   "checkSignin": () => (/* binding */ checkSignin),
+/* harmony export */   "isPasswordless": () => (/* binding */ isPasswordless),
+/* harmony export */   "changeDisplayName": () => (/* binding */ changeDisplayName),
+/* harmony export */   "refreshContents": () => (/* binding */ refreshContents),
+/* harmony export */   "authSendVerificationEmail": () => (/* binding */ authSendVerificationEmail)
+/* harmony export */ });
+/* harmony import */ var firebase_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/auth */ "../../node_modules/firebase/auth/dist/index.esm.js");
+/* harmony import */ var firebase_database__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! firebase/database */ "../../node_modules/firebase/database/dist/index.esm.js");
+
+
+
+/**
+ * Sign up for a new account
+ *
+ * @param app_ Firebase application reference
+ * @param email_{string} Email address of the user
+ * @param password_{string} Password of the user
+ * @param name_{string} Name of the user
+ * @param id_{string} ID of the user
+ * @returns {Promise<UserCredential | string>} A promise of an UserCredential of the new account, or an error message
+ */
+function authSignUp(app_, email_, password_, name_, id_) {
+  // Email validity check
+  const skku_domain = ['skku.edu', 'g.skku.edu', 'o365.skku.edu'];
+  const re =
+    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.exec(
+      email_
+    );
+
+  return new Promise((resolve, reject) => {
+    if (re !== null && skku_domain.includes(re[0].split('@')[1])) {
+      // Valid email used, proceed with sign up
+      const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+      // Check if id is unique
+      const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.getDatabase)(app_);
+      const accountRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.ref)(db, 'users/' + id_ + '/');
+      let isUserIdValid = true;
+
+      (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.get)(accountRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            reject('ID already in use');
+            isUserIdValid = false;
+          }
+
+          if (isUserIdValid) {
+            (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.createUserWithEmailAndPassword)(auth, email_, password_)
+              .then((uc) => {
+                // Update database structure
+                // Object for new user
+                let newUserUpdate = {
+                  email: email_,
+                  name: name_,
+                  joined_rooms: {},
+                  profile_image: '',
+                  status_message: '',
+                };
+
+                const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.getDatabase)(app_);
+                const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.ref)(db, 'users/' + id_ + '/');
+
+                Promise.all([(0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.updateProfile)(uc.user, { displayName: id_ }), (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.set)(userRef, newUserUpdate)]).then(() => {
+                  resolve(uc);
+                });
+              })
+              .catch((err) => reject(err.message));
+          }
+        })
+        .catch((err) => alert(err.message));
+    } else {
+      // Invalid email used
+      reject('Email address not valid');
+    }
+  });
+}
+
+/**
+ * Sign in to an account
+ *
+ * @param app_ Firebase application reference
+ * @param email_ Email address
+ * @param password_ Password
+ * @returns {Promise<UserCredential | string>} A promise of an UserCredential, or an error message
+ */
+async function authSignIn(app_, email_, password_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signInWithEmailAndPassword)(auth, email_, password_)
+      .then((uc) => {
+        resolve(uc);
+      })
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Check if the user is currently signed in
+ *
+ * @param app_ Firebase application reference
+ * @returns {boolean} Boolean value of whether the user is signed in
+ */
+function authSignInStatus(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  const user = auth.currentUser;
+
+  return user !== null;
+}
+
+/**
+ * Sign out from the app
+ *
+ * @param app_ Firebase application reference
+ * @returns {Promise<void | string>} A promise of the result, or an error message
+ */
+async function authSignOut(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  const user = auth.currentUser;
+
+  return new Promise((resolve, reject) => {
+    if (user) {
+      // User signed in
+      (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signOut)(auth)
+        .then(resolve)
+        .catch((err) => reject(err.message));
+    } else {
+      reject('User not signed in');
+    }
+  });
+}
+
+/**
+ * Delete an user
+ * Make sure to confirm the user again!
+ *
+ * @param app_ Firebase application reference
+ * @returns {Promise<void | string>} A promise for the result, or an error message
+ */
+function authDeleteUser(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  const user = auth.currentUser;
+
+  if (user) {
+    // User logged in -> delete
+    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.deleteUser)(user)
+      .then(() => {
+        alert('Your account has been successfully deleted');
+        document.location.href = '../auth-test/signin.html';
+      })
+      .catch((err) => {
+        alert('Error during user deletion\n(' + err.code + ') ' + err.message);
+      });
+  } else {
+    // User not logged in
+    alert('User not logged in');
+  }
+}
+
+/**
+ * Send Password Reset Email
+ * @param app_ Firebase application reference
+ * @param email_ Email address of the user
+ */
+async function authForgotPassword(app_, email_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendPasswordResetEmail)(auth, email_)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Get the uid of the user
+ * @param app_ Firebase application reference
+ * @returns {string} User's uid
+ */
+function authGetUserUID(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  return auth.currentUser.displayName;
+}
+
+/**
+ * Send Passwordless Sign-in Link
+ * @param app_ Firebase application reference
+ * @param email_ Email address of the user
+ */
+async function authPWLessSignIn(app_, email_) {
+  const actionCodeSettings = {
+    url: 'http://localhost:5500/profile/profile.html',
+    handleCodeInApp: true,
+  };
+
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  let success;
+
+  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendSignInLinkToEmail)(auth, email_, actionCodeSettings)
+    .then(() => {
+      window.localStorage.setItem('emailForSignIn', email_);
+      success = true;
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert('errorCode: ' + errorCode + '\n errorMessage:' + errorMessage);
+      success = false;
+    });
+  return success;
+}
+
+/**
+ * Check Sign-in status
+ * @param app_ Firebase application reference
+ * @param loadContents Page contents load reference
+ */
+async function checkSignin(app_, loadContents) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.onAuthStateChanged)(auth, async (user) => {
+    if (user) {
+      // alert('Hello ' + user.email);
+      loadContents();
+    } else {
+      await isPasswordless(app_).then((resolve) => {
+        if (resolve) {
+        } else {
+          document.location.href = '../auth-test/signin.html';
+        }
+      });
+    }
+  });
+}
+
+/**
+ * Check if the user logged through Passwordless sign-in
+ * @param app_ Firebase application reference
+ */
+async function isPasswordless(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  let success;
+  if ((0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.isSignInWithEmailLink)(auth, window.location.href)) {
+    let email = window.localStorage.getItem('emailForSignIn');
+    if (!email) {
+      email = window.prompt('Please provide your email for confirmation');
+    }
+
+    await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signInWithEmailLink)(auth, email, window.location.href)
+      .then((result) => {
+        console.log(result);
+
+        window.localStorage.removeItem('emailForSignIn');
+        (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.onAuthStateChanged)(auth, (user) => {
+          console.log(user);
+        });
+        success = true;
+      })
+      .catch((error) => {
+        console.log(error);
+        success = false;
+      });
+  } else {
+    success = false;
+  }
+  return success;
+}
+
+/**
+ * Change display name of a user
+ * @param app_ Firebase application reference
+ * @param name_ Input name for name change
+ */
+async function changeDisplayName(app_, name_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.updateProfile)(auth.currentUser, {
+    displayName: name_,
+  })
+    .then(() => {
+      console.log('displayName changed');
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+/**
+ * Refresh contents of the page upon change
+ * @param app_ Firebase application reference
+ */
+function refreshContents(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+  return auth.currentUser;
+}
+
+/**
+ * Send a verification email to new user
+ * @param app_ Firebase application reference
+ * @returns {Promise<string>} A promise of a result message
+ */
+async function authSendVerificationEmail(app_) {
+  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
+
+  return new Promise((resolve, reject) => {
+    if (!auth.currentUser.emailVerified) {
+      (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendEmailVerification)(auth.currentUser)
+        .then(() => resolve('Sent a verification email to\n' + auth.currentUser.email))
+        .catch((err) => reject(err.message));
+    } else reject('Email already verified');
+  });
+}
+
+
+/***/ }),
+
+/***/ "./src/firebase-rdb.js":
+/*!*****************************!*\
+  !*** ./src/firebase-rdb.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "rdbSendMessage": () => (/* binding */ rdbSendMessage),
+/* harmony export */   "rdbDeleteMessage": () => (/* binding */ rdbDeleteMessage),
+/* harmony export */   "rdbExecuteNewChat": () => (/* binding */ rdbExecuteNewChat),
+/* harmony export */   "rdbExecuteDeleteChat": () => (/* binding */ rdbExecuteDeleteChat),
+/* harmony export */   "rdbExecuteUserJoined": () => (/* binding */ rdbExecuteUserJoined),
+/* harmony export */   "rdbExecuteUserLeft": () => (/* binding */ rdbExecuteUserLeft),
+/* harmony export */   "rdbGetUserJoinedChatRooms": () => (/* binding */ rdbGetUserJoinedChatRooms),
+/* harmony export */   "rdbGetChatFromChatRoom": () => (/* binding */ rdbGetChatFromChatRoom),
+/* harmony export */   "rdbGetMembersFromChatRoom": () => (/* binding */ rdbGetMembersFromChatRoom),
+/* harmony export */   "rdbChatRoomJoinUser": () => (/* binding */ rdbChatRoomJoinUser),
+/* harmony export */   "rdbChatRoomLeaveUser": () => (/* binding */ rdbChatRoomLeaveUser),
+/* harmony export */   "rdbGetRoomTitle": () => (/* binding */ rdbGetRoomTitle),
+/* harmony export */   "rdbGetUserInfoFromID": () => (/* binding */ rdbGetUserInfoFromID),
+/* harmony export */   "rdbCheckIfIDExists": () => (/* binding */ rdbCheckIfIDExists),
+/* harmony export */   "rdbCreateNewRoom": () => (/* binding */ rdbCreateNewRoom),
+/* harmony export */   "rdbChangeName": () => (/* binding */ rdbChangeName),
+/* harmony export */   "rdbUpdateImage": () => (/* binding */ rdbUpdateImage),
+/* harmony export */   "rdbGetImageURL": () => (/* binding */ rdbGetImageURL)
+/* harmony export */ });
+/* harmony import */ var firebase_database__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/database */ "../../node_modules/firebase/database/dist/index.esm.js");
+
+
+/**
+ * Send a new message
+ *
+ * Usage:
+ * Send a text message: `rdbSendMessage(app, "hyunsoo", "room_2", "message", "Meet me at 6!").then(() => alert("Message sent!"))
+ * Send an image: `rdbSendMessage(app, "hyunsoo", "room_1", "image", "path_to_file_in_firebase_storage").then(() => alert("Image sent!"))
+ * Note that you have to upload the image using `storageUpload()` to get a path of image on Firebase Storage before sending an image
+ *
+ * @param app_ Firebase application reference
+ * @param userID {string} User ID
+ * @param roomID {string} ID of the room
+ * @param messageType {string} Type of the message (for example, message, image)
+ * @param content{string} Content of the message (text, Firebase Storage path)
+ * @returns {Promise<void | string>} Promise of the result, or an error message
+ */
+async function rdbSendMessage(app_, userID, roomID, messageType, content) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/rooms/' + roomID + '/'); // Reference to chats/room/roomID
+
+  // Get the ID of the last message
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(roomRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          // ID of the new message
+          const newMessageIndex = snapshot.val()['last_message'] + 1;
+
+          // Object of the new message
+          let newMessageObject = {
+            message_index: newMessageIndex,
+            user: userID,
+            time: new Date().valueOf(),
+          };
+          newMessageObject[messageType] = content;
+
+          // Add a new child to chats/messages/roomID/newMessageID with chat contents
+          (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.set)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/' + newMessageIndex), newMessageObject).catch((err) => {
+            alert('Error while adding new message\n(' + err.code + ') ' + err.message);
+          });
+
+          // Update last-message of room
+          (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(roomRef, {
+            last_message: newMessageIndex,
+          })
+            .then(resolve)
+            .catch((err) => reject(err.message));
+        } else {
+          // New chat room with no message
+          // TODO: Create new room
+          reject('Create new room not supported yet');
+        }
+      })
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Delete (Mark as deleted) a sent message
+ *
+ * Usage: `rdbDeleteMessage(app, "hyunsoo", "room_1", "m13").then(() => alert("Message deleted!"))
+ *
+ * @param app_ Firebase application reference
+ * @param userID{string} Current user ID
+ * @param roomID{string} Room ID
+ * @param chatID{number} Chat ID to delete
+ * @returns {Promise<void | string>} A promise of the result, or an error message
+ */
+async function rdbDeleteMessage(app_, userID, roomID, chatID) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const chatRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/' + chatID + '/');
+
+  // Mark message as deleted
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(chatRef, { deleted: true })
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Execute a function whenever the a new child is appended (a new chat is updated)
+ * The function is also executed for every children when the listener is set up for the first time.
+ *
+ * Note that chat ID and data is passed as first and second arguments to func
+ *
+ * Usage: `unsubscriber = rdbExecuteNewChat(updateButton, document.getElementById('update-button')`
+ * executes `updateButton(ID, chat data, document.getElementById('update-button'))` whenever the database is updated,
+ * and execute `unsubscriber()` to cancel listening
+ *
+ * @param app_ Firebase application reference
+ * @param func{function} Function to execute
+ * @param roomID{string} Room ID
+ * @param args Arguments to pass
+ * @returns function A function to cancel listening
+ */
+function rdbExecuteNewChat(app_, func, roomID, ...args) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const messagesRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/');
+
+  // New chat added
+  return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildAdded)(
+    messagesRef,
+    (snapshot) => func(snapshot.val().message_index, snapshot.val(), ...args),
+    (err) => alert(err.message)
+  );
+}
+
+/**
+ * Execute a function whenever the a new child is modified
+ *
+ * Note that chat ID and data is passed as first and second arguments to func
+ *
+ * Usage: `unsubscriber = rdbExecuteDeleteChat(updateButton, document.getElementById('remove-id')`
+ * executes `updateButton(ID, chat data, document.getElementById('remove-id'))` whenever the database is updated,
+ * and execute `unsubscriber()` to cancel listening
+ *
+ * @param app_ Firebase application reference
+ * @param func{function} Function to execute
+ * @param roomID{string} Room ID
+ * @param args Arguments to pass
+ * @returns function Function to cancel listening
+ */
+function rdbExecuteDeleteChat(app_, func, roomID, ...args) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const messagesRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/');
+
+  // Chat deleted -> new property 'deleted' is added to previous chat object
+  return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildChanged)(
+    messagesRef,
+    (snapshot) => {
+      func(snapshot.val().message_index, snapshot.val(), ...args);
+    },
+    (err) => alert(err.message)
+  );
+}
+
+/**
+ * Execute a function whenever a new member joined
+ * The function is also executed for every children when the listener is set up for the first time.
+ *
+ * Note that the first argument of 'func' will be the ID of the member
+ *
+ * Usage: `unsubscriber = rdbExecuteUserJoined(updateUserList, document.getElementById('user-lists')`
+ * executes `updateUserList(ID, document.getElementById('user-lists'))` whenever the database is updated,
+ * and execute `unsubscriber()` to cancel listening
+ *
+ * @param app_ Firebase application reference
+ * @param func{function} Function to execute
+ * @param roomID Room ID
+ * @param args Arguments to pass
+ * @return function Function to cancel listening
+ */
+function rdbExecuteUserJoined(app_, func, roomID, ...args) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/members/' + roomID + '/');
+
+  // New member
+  return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildAdded)(
+    roomRef,
+    (snapshot) => func(snapshot.val(), ...args),
+    (err) => alert(err.message)
+  );
+}
+
+/**
+ * Execute a function whenever a member left
+ *
+ * Note that the first argument of 'func' will be the ID of the user that left
+ *
+ * Usage: `unsubscriber = rdbExecuteUserLeft(updateLeftUser, document.getElementById('user-lists')`
+ * executes `updateLeftUser(ID, document.getElementById('user-lists'))` whenever the database is updated,
+ * and execute `unsubscriber()` to cancel listening
+ *
+ * @param app_ Firebase application reference
+ * @param func{function} Function to execute
+ * @param roomID Room ID
+ * @param args Arguments to pass
+ * @return function Function to cancel listening
+ */
+function rdbExecuteUserLeft(app_, func, roomID, ...args) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/members/' + roomID + '/');
+
+  // Member left
+  return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildRemoved)(
+    roomRef,
+    (snapshot) => func(snapshot.val(), ...args),
+    (err) => alert(err.message)
+  );
+}
+
+/**
+ * Get an array of room IDs the user joined
+ *
+ * Usage: `rdbGetUserJoinedChatRooms(app, "hyunsoo").then((rooms) => rooms.forEach(updateChatRoomList))`
+ *
+ * @param app_ Firebase application reference
+ * @param userID {string} User ID
+ * @returns {Promise<Array<string> | string>} A promise of array of string of room IDs, or an error message
+ */
+async function rdbGetUserJoinedChatRooms(app_, userID) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'users/' + userID + '/');
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(userRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          // User exists
+          const joinedRoomsArray = snapshot.val()['joined_rooms'];
+
+          if (joinedRoomsArray === undefined) {
+            // User exists but has not joined any room
+            resolve([]);
+          } else {
+            resolve(Object.keys(snapshot.val()['joined_rooms']));
+          }
+        } else {
+          // User does not exist
+          reject('User does not exist');
+        }
+      })
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Get an object of all messages from a chat room
+ *
+ * @param app_ Firebase application reference
+ * @param roomID{string} Room ID
+ * @returns {Promise<object | string>} A promise of an object, or an error message
+ */
+async function rdbGetChatFromChatRoom(app_, roomID) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const chatRoomMessagesRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/');
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(chatRoomMessagesRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          // Chat room exists
+          resolve(snapshot.val());
+        } else {
+          // Chat room does not exist
+          reject('Chat room does not exist');
+        }
+      })
+      .catch((err) => {
+        reject(err.message);
+      });
+  });
+}
+
+/**
+ * Get an array of all members in a chat room
+ *
+ * @param app_ Firebase application reference
+ * @param roomID Room ID
+ * @returns {Promise<array | string>} A promise of an array, or an error message
+ */
+async function rdbGetMembersFromChatRoom(app_, roomID) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const chatRoomMembersRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/members/' + roomID + '/');
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(chatRoomMembersRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          // Room exists
+          resolve(Object.keys(snapshot.val()));
+        } else {
+          // Chat room does not exist
+          reject('Chat room does not exist');
+        }
+      })
+      .catch((err) => {
+        reject(err.message);
+      });
+  });
+}
+
+/**
+ * Add user to a chat room
+ *
+ * Usage: `rdbChatRoomJoinUser(app, "hyunsoo", "room_3").then(() => alert("User Joined!"))`
+ *
+ * @param app_ Firebase application reference
+ * @param userID{string} User ID
+ * @param roomID{string} Room ID
+ * @returns {Promise<void | string>} Promise of the result, or an error emssage
+ */
+async function rdbChatRoomJoinUser(app_, userID, roomID) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const rootRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, '/');
+
+  let updateObject = {};
+  updateObject['/chats/members/' + roomID + '/' + userID] = userID;
+  updateObject['/users/' + userID + '/joined_rooms/' + roomID] = roomID;
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(rootRef, updateObject)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Delete user from a chat room
+ *
+ * Usage: `rdbChatRoomLeaveUser(app, "hyunsoo", "room_3").then(() => alert("User left!"))`
+ *
+ * @param app_ Firebase application reference
+ * @param userID{string} User ID
+ * @param roomID{string} Room ID
+ * @returns {Promise<void | string>} Promise of the result, or an error message
+ */
+async function rdbChatRoomLeaveUser(app_, userID, roomID) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const rootRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, '/');
+
+  let updateObject = {};
+  updateObject['/chats/members/' + roomID + '/' + userID] = null;
+  updateObject['/users/' + userID + '/joined_rooms/' + roomID] = null;
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(rootRef, updateObject)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+/** Return the title of the room
+ *
+ * @param app_ Firebase application reference
+ * @param roomID Room ID
+ * @returns {Promise<string>} A promise of the room name, or an error message
+ */
+async function rdbGetRoomTitle(app_, roomID) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/rooms/' + roomID + '/');
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(roomRef)
+      .then((snapshot) => {
+        resolve(snapshot.val().title);
+      })
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Get user information
+ *
+ * @param app_ Firebase application reference
+ * @param userID User ID
+ * @param specificInfo{string} Specific information of the user to fetch (ex. email,name)
+ * @returns {Promise<object | string>} A promise of the result, or an error message
+ */
+async function rdbGetUserInfoFromID(app_, userID, specificInfo = '') {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'users/' + userID + '/' + specificInfo + '/');
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(userRef)
+      .then((snapshot) => resolve(snapshot.val()))
+      .catch((err) => reject(err.message));
+  });
+}
+
+async function rdbCheckIfIDExists(app_, userID) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'users/' + userID + '/');
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(userRef)
+      .then((snapshot) => {
+        resolve(snapshot.exists());
+      })
+      .catch((err) => reject(err.message));
+  });
+}
+
+async function rdbCreateNewRoom(app_, user1, user2) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+
+  // Check if id exists
+  return new Promise((resolve, reject) => {
+    Promise.all([rdbCheckIfIDExists(app_, user1), rdbCheckIfIDExists(app_, user2)])
+      .then(([id1, id2]) => {
+        if (id1 && id2) {
+          // Both ID Valid
+          const roomID = (new Date().valueOf() + Math.floor(Math.random() * 10000000000000)).toString(10);
+
+          let newData = {};
+          newData['chats/members/' + roomID + '/' + user1] = user1;
+          newData['chats/members/' + roomID + '/' + user2] = user2;
+
+          newData['users/' + user1 + '/joined_rooms/' + roomID] = roomID;
+          newData['users/' + user2 + '/joined_rooms/' + roomID] = roomID;
+
+          newData['chats/messages/' + roomID] = {};
+          newData['chats/rooms/' + roomID] = { last_message: 0, title: 'Chat room' };
+
+          (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, '/'), newData)
+            .then(resolve)
+            .catch((err) => reject(err.message));
+        }
+      })
+      .catch(reject);
+  });
+}
+
+async function rdbChangeName(app_, userID, newName) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const rootRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, '/');
+
+  let updateObject = {};
+  updateObject['/users/' + userID + '/name/'] = newName;
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(rootRef, updateObject)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+async function rdbUpdateImage(app_, userID, imageURL) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const rootRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, '/');
+
+  let updateObject = {};
+  updateObject['/users/' + userID + '/profile_image/'] = imageURL;
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(rootRef, updateObject)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+async function rdbGetImageURL(app_, userID) {
+  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
+  const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'users/' + userID + '/profile_image/');
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(userRef)
+      .then((snapshot) => resolve(snapshot.val()))
+      .catch((err) => reject(err.message));
+  });
+}
+
+
+/***/ }),
+
+/***/ "./src/firebase-storage.js":
+/*!*********************************!*\
+  !*** ./src/firebase-storage.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "storageUpload": () => (/* binding */ storageUpload),
+/* harmony export */   "storageDelete": () => (/* binding */ storageDelete),
+/* harmony export */   "storageView": () => (/* binding */ storageView),
+/* harmony export */   "storageGetURL": () => (/* binding */ storageGetURL)
+/* harmony export */ });
+/* harmony import */ var firebase_storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/storage */ "../../node_modules/firebase/storage/dist/index.esm.js");
+
+
+/**
+ * Upload a file to the storage
+ *
+ * Usage: `storageUpload(app, File, "images/room_1/img_1.jpg").then((r) => alert("File uploaded to: " + r))`
+ *
+ * @param app_ Firebase application reference
+ * @param src {File} Source path of the file
+ * @param dest {string} Destination path of the file
+ * @returns {Promise<string>}
+ * Returns a promise for the path of the uploaded file of whether the upload was successful,
+ * or an error message if not successful
+ */
+async function storageUpload(app_, src, dest) {
+  // Storage and reference
+  const storage = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getStorage)(app_);
+  const uploadRef = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.ref)(storage, dest);
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.uploadBytes)(uploadRef, src)
+      .then((r) => resolve(r.ref.fullPath))
+      .catch(reject);
+  });
+}
+
+/**
+ * Delete a file from the storage
+ *
+ * Usage: `storageDelete(app, "images/room_1/img_1.jpg").then(() => alert("File deleted"))`
+ *
+ * @param app_ Firebase application reference
+ * @param file Path of the file to be deleted
+ * @returns {Promise<void | string>} Returns a promise of whether deleting the file was successful,
+ * or an error message if not successful
+ */
+async function storageDelete(app_, file) {
+  // Storage and reference
+  const storage = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getStorage)(app_);
+  const fileRef = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.ref)(storage, file);
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.deleteObject)(fileRef)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * View a list of files from the directory
+ *
+ * Usage: `storageView(app, "images/room_1/").then((files) => files.forEach((file) => addFileListView(file))`
+ *
+ * @param app_ Firebase application reference
+ * @param dir Path of the directory
+ * @returns {Promise<string>} A promise of a string representation of the list of the files if the directory exists,
+ * or an error message if not successful
+ */
+async function storageView(app_, dir) {
+  // Storage and reference
+  const storage = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getStorage)(app_);
+  const dirRef = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.ref)(storage, dir);
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.list)(dirRef)
+      .then((r) => resolve(r.items))
+      .catch((err) => reject(err.message));
+  });
+}
+
+/**
+ * Get an URL for the file
+ *
+ * Usage: `storageGetURL(app, "images/room_1/cat.jpg").then((img) => image.src = img)`
+ *
+ * @param app_ Firebase application reference
+ * @param file Path to file
+ * @returns {Promise<string>} A promise of an URL
+ */
+async function storageGetURL(app_, file) {
+  // Storage and reference
+  const storage = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getStorage)(app_);
+  const fileRef = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.ref)(storage, file);
+
+  return new Promise((resolve, reject) => {
+    (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getDownloadURL)(fileRef)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
+
+
+/***/ }),
+
+/***/ "./src/firebase.js":
+/*!*************************!*\
+  !*** ./src/firebase.js ***!
+  \*************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "app": () => (/* binding */ app)
+/* harmony export */ });
+/* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/app */ "../../node_modules/firebase/app/dist/index.esm.js");
+// Initialize Firebase app with API key of our app
+
+
+/**
+ * API Keys for Firebase Application
+ * @type {{storageBucket: string, apiKey: string, messagingSenderId: string, appId: string, projectId: string, databaseURL: string, authDomain: string}}
+ */
+const firebaseConfig = {
+    apiKey: "AIzaSyBxDGM7VmgHG-Yvy6LPuKDT3C3JIArHPkg",
+    authDomain: "skku-web-chat.firebaseapp.com",
+    databaseURL: "https://skku-web-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "skku-web-chat",
+    storageBucket: "skku-web-chat.appspot.com",
+    messagingSenderId: "1006166323603",
+    appId: "1:1006166323603:web:35ac99e8c5e83faa55f866",
+};
+
+/**
+ * Application reference for accessing Firebase
+ * @type {FirebaseApp}
+ */
+const app = (0,firebase_app__WEBPACK_IMPORTED_MODULE_0__.initializeApp)(firebaseConfig);
+
+
+
+
+/***/ }),
+
+/***/ "../../node_modules/@firebase/auth/dist/esm2017/index-8593558d.js":
+/*!************************************************************************!*\
+  !*** ../../node_modules/@firebase/auth/dist/esm2017/index-8593558d.js ***!
+  \************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -111,11 +1074,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "y": () => (/* binding */ deleteUser),
 /* harmony export */   "z": () => (/* binding */ debugErrorMap)
 /* harmony export */ });
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
-/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/app */ "./node_modules/@firebase/app/dist/esm/index.esm2017.js");
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
-/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/logger */ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/component */ "./node_modules/@firebase/component/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/app */ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/logger */ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/component */ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js");
 
 
 
@@ -9435,10 +10398,10 @@ registerAuth("Browser" /* BROWSER */);
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/auth/dist/esm2017/index.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/@firebase/auth/dist/esm2017/index.js ***!
-  \***********************************************************/
+/***/ "../../node_modules/@firebase/auth/dist/esm2017/index.js":
+/*!***************************************************************!*\
+  !*** ../../node_modules/@firebase/auth/dist/esm2017/index.js ***!
+  \***************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -9522,11 +10485,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "verifyBeforeUpdateEmail": () => (/* reexport safe */ _index_8593558d_js__WEBPACK_IMPORTED_MODULE_0__.ab),
 /* harmony export */   "verifyPasswordResetCode": () => (/* reexport safe */ _index_8593558d_js__WEBPACK_IMPORTED_MODULE_0__.a3)
 /* harmony export */ });
-/* harmony import */ var _index_8593558d_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index-8593558d.js */ "./node_modules/@firebase/auth/dist/esm2017/index-8593558d.js");
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
-/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/app */ "./node_modules/@firebase/app/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/logger */ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @firebase/component */ "./node_modules/@firebase/component/dist/esm/index.esm2017.js");
+/* harmony import */ var _index_8593558d_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index-8593558d.js */ "../../node_modules/@firebase/auth/dist/esm2017/index-8593558d.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/app */ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/logger */ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @firebase/component */ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js");
 
 
 
@@ -9538,10 +10501,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/database/dist/index.esm2017.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/@firebase/database/dist/index.esm2017.js ***!
-  \***************************************************************/
+/***/ "../../node_modules/@firebase/database/dist/index.esm2017.js":
+/*!*******************************************************************!*\
+  !*** ../../node_modules/@firebase/database/dist/index.esm2017.js ***!
+  \*******************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -9598,10 +10561,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "startAt": () => (/* binding */ startAt),
 /* harmony export */   "update": () => (/* binding */ update)
 /* harmony export */ });
-/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "./node_modules/@firebase/app/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/component */ "./node_modules/@firebase/component/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
-/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/logger */ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/component */ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @firebase/logger */ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js");
 
 
 
@@ -23574,10 +24537,10 @@ registerDatabase();
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/storage/dist/index.esm2017.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/@firebase/storage/dist/index.esm2017.js ***!
-  \**************************************************************/
+/***/ "../../node_modules/@firebase/storage/dist/index.esm2017.js":
+/*!******************************************************************!*\
+  !*** ../../node_modules/@firebase/storage/dist/index.esm2017.js ***!
+  \******************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -23608,9 +24571,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "uploadBytesResumable": () => (/* binding */ uploadBytesResumable),
 /* harmony export */   "uploadString": () => (/* binding */ uploadString)
 /* harmony export */ });
-/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "./node_modules/@firebase/app/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
-/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/component */ "./node_modules/@firebase/component/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/component */ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js");
 
 
 
@@ -27136,10 +28099,10 @@ registerStorage();
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/util/dist/index.esm2017.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/@firebase/util/dist/index.esm2017.js ***!
-  \***********************************************************/
+/***/ "../../node_modules/@firebase/util/dist/index.esm2017.js":
+/*!***************************************************************!*\
+  !*** ../../node_modules/@firebase/util/dist/index.esm2017.js ***!
+  \***************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -29101,10 +30064,10 @@ function getModularInstance(service) {
 
 /***/ }),
 
-/***/ "./node_modules/firebase/app/dist/index.esm.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/firebase/app/dist/index.esm.js ***!
-  \*****************************************************/
+/***/ "../../node_modules/firebase/app/dist/index.esm.js":
+/*!*********************************************************!*\
+  !*** ../../node_modules/firebase/app/dist/index.esm.js ***!
+  \*********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -29128,7 +30091,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "registerVersion": () => (/* reexport safe */ _firebase_app__WEBPACK_IMPORTED_MODULE_0__.registerVersion),
 /* harmony export */   "setLogLevel": () => (/* reexport safe */ _firebase_app__WEBPACK_IMPORTED_MODULE_0__.setLogLevel)
 /* harmony export */ });
-/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "./node_modules/@firebase/app/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/app */ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js");
 
 
 
@@ -29157,10 +30120,10 @@ var version = "9.5.0";
 
 /***/ }),
 
-/***/ "./node_modules/firebase/auth/dist/index.esm.js":
-/*!******************************************************!*\
-  !*** ./node_modules/firebase/auth/dist/index.esm.js ***!
-  \******************************************************/
+/***/ "../../node_modules/firebase/auth/dist/index.esm.js":
+/*!**********************************************************!*\
+  !*** ../../node_modules/firebase/auth/dist/index.esm.js ***!
+  \**********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -29244,17 +30207,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "verifyBeforeUpdateEmail": () => (/* reexport safe */ _firebase_auth__WEBPACK_IMPORTED_MODULE_0__.verifyBeforeUpdateEmail),
 /* harmony export */   "verifyPasswordResetCode": () => (/* reexport safe */ _firebase_auth__WEBPACK_IMPORTED_MODULE_0__.verifyPasswordResetCode)
 /* harmony export */ });
-/* harmony import */ var _firebase_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/auth */ "./node_modules/@firebase/auth/dist/esm2017/index.js");
+/* harmony import */ var _firebase_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/auth */ "../../node_modules/@firebase/auth/dist/esm2017/index.js");
 
 //# sourceMappingURL=index.esm.js.map
 
 
 /***/ }),
 
-/***/ "./node_modules/firebase/database/dist/index.esm.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/firebase/database/dist/index.esm.js ***!
-  \**********************************************************/
+/***/ "../../node_modules/firebase/database/dist/index.esm.js":
+/*!**************************************************************!*\
+  !*** ../../node_modules/firebase/database/dist/index.esm.js ***!
+  \**************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -29311,17 +30274,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "startAt": () => (/* reexport safe */ _firebase_database__WEBPACK_IMPORTED_MODULE_0__.startAt),
 /* harmony export */   "update": () => (/* reexport safe */ _firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)
 /* harmony export */ });
-/* harmony import */ var _firebase_database__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/database */ "./node_modules/@firebase/database/dist/index.esm2017.js");
+/* harmony import */ var _firebase_database__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/database */ "../../node_modules/@firebase/database/dist/index.esm2017.js");
 
 //# sourceMappingURL=index.esm.js.map
 
 
 /***/ }),
 
-/***/ "./node_modules/firebase/storage/dist/index.esm.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/firebase/storage/dist/index.esm.js ***!
-  \*********************************************************/
+/***/ "../../node_modules/firebase/storage/dist/index.esm.js":
+/*!*************************************************************!*\
+  !*** ../../node_modules/firebase/storage/dist/index.esm.js ***!
+  \*************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -29352,17 +30315,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "uploadBytesResumable": () => (/* reexport safe */ _firebase_storage__WEBPACK_IMPORTED_MODULE_0__.uploadBytesResumable),
 /* harmony export */   "uploadString": () => (/* reexport safe */ _firebase_storage__WEBPACK_IMPORTED_MODULE_0__.uploadString)
 /* harmony export */ });
-/* harmony import */ var _firebase_storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/storage */ "./node_modules/@firebase/storage/dist/index.esm2017.js");
+/* harmony import */ var _firebase_storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/storage */ "../../node_modules/@firebase/storage/dist/index.esm2017.js");
 
 //# sourceMappingURL=index.esm.js.map
 
 
 /***/ }),
 
-/***/ "./node_modules/tslib/tslib.es6.js":
-/*!*****************************************!*\
-  !*** ./node_modules/tslib/tslib.es6.js ***!
-  \*****************************************/
+/***/ "../../node_modules/tslib/tslib.es6.js":
+/*!*********************************************!*\
+  !*** ../../node_modules/tslib/tslib.es6.js ***!
+  \*********************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -29635,946 +30598,10 @@ function __classPrivateFieldSet(receiver, state, value, kind, f) {
 
 /***/ }),
 
-/***/ "./src/firebase-auth.js":
-/*!******************************!*\
-  !*** ./src/firebase-auth.js ***!
-  \******************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "authSignUp": () => (/* binding */ authSignUp),
-/* harmony export */   "authSignIn": () => (/* binding */ authSignIn),
-/* harmony export */   "authSignInStatus": () => (/* binding */ authSignInStatus),
-/* harmony export */   "authSignOut": () => (/* binding */ authSignOut),
-/* harmony export */   "authDeleteUser": () => (/* binding */ authDeleteUser),
-/* harmony export */   "authForgotPassword": () => (/* binding */ authForgotPassword),
-/* harmony export */   "authGetUserUID": () => (/* binding */ authGetUserUID),
-/* harmony export */   "authPWLessSignIn": () => (/* binding */ authPWLessSignIn),
-/* harmony export */   "checkSignin": () => (/* binding */ checkSignin),
-/* harmony export */   "isPasswordless": () => (/* binding */ isPasswordless),
-/* harmony export */   "changeDisplayName": () => (/* binding */ changeDisplayName),
-/* harmony export */   "refreshContents": () => (/* binding */ refreshContents),
-/* harmony export */   "authSendVerificationEmail": () => (/* binding */ authSendVerificationEmail)
-/* harmony export */ });
-/* harmony import */ var firebase_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/auth */ "./node_modules/firebase/auth/dist/index.esm.js");
-/* harmony import */ var firebase_database__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! firebase/database */ "./node_modules/firebase/database/dist/index.esm.js");
-
-
-
-/**
- * Sign up for a new account
- *
- * @param app_ Firebase application reference
- * @param email_{string} Email address of the user
- * @param password_{string} Password of the user
- * @param name_{string} Name of the user
- * @param id_{string} ID of the user
- * @returns {Promise<UserCredential | string>} A promise of an UserCredential of the new account, or an error message
- */
-function authSignUp(app_, email_, password_, name_, id_) {
-  // Email validity check
-  const skku_domain = ['skku.edu', 'g.skku.edu', 'o365.skku.edu'];
-  const re =
-    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.exec(
-      email_
-    );
-
-  return new Promise((resolve, reject) => {
-    if (re !== null && skku_domain.includes(re[0].split('@')[1])) {
-      // Valid email used, proceed with sign up
-      const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-      // Check if id is unique
-      const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.getDatabase)(app_);
-      const accountRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.ref)(db, 'users/' + id_ + '/');
-      let isUserIdValid = true;
-
-      (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.get)(accountRef)
-        .then((snapshot) => {
-          if (snapshot.exists()) {
-            reject('ID already in use');
-            isUserIdValid = false;
-          }
-
-          if (isUserIdValid) {
-            (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.createUserWithEmailAndPassword)(auth, email_, password_)
-              .then((uc) => {
-                // Update database structure
-                // Object for new user
-                let newUserUpdate = {
-                  email: email_,
-                  name: name_,
-                  joined_rooms: {},
-                  profile_image: '',
-                  status_message: '',
-                };
-
-                const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.getDatabase)(app_);
-                const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.ref)(db, 'users/' + id_ + '/');
-
-                Promise.all([(0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.updateProfile)(uc.user, { displayName: id_ }), (0,firebase_database__WEBPACK_IMPORTED_MODULE_1__.set)(userRef, newUserUpdate)]).then(() => {
-                  resolve(uc);
-                });
-              })
-              .catch((err) => reject(err.message));
-          }
-        })
-        .catch((err) => alert(err.message));
-    } else {
-      // Invalid email used
-      reject('Email address not valid');
-    }
-  });
-}
-
-/**
- * Sign in to an account
- *
- * @param app_ Firebase application reference
- * @param email_ Email address
- * @param password_ Password
- * @returns {Promise<UserCredential | string>} A promise of an UserCredential, or an error message
- */
-async function authSignIn(app_, email_, password_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signInWithEmailAndPassword)(auth, email_, password_)
-      .then((uc) => {
-        resolve(uc);
-      })
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Check if the user is currently signed in
- *
- * @param app_ Firebase application reference
- * @returns {boolean} Boolean value of whether the user is signed in
- */
-function authSignInStatus(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  const user = auth.currentUser;
-
-  return user !== null;
-}
-
-/**
- * Sign out from the app
- *
- * @param app_ Firebase application reference
- * @returns {Promise<void | string>} A promise of the result, or an error message
- */
-async function authSignOut(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  const user = auth.currentUser;
-
-  return new Promise((resolve, reject) => {
-    if (user) {
-      // User signed in
-      (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signOut)(auth)
-        .then(resolve)
-        .catch((err) => reject(err.message));
-    } else {
-      reject('User not signed in');
-    }
-  });
-}
-
-/**
- * Delete an user
- * Make sure to confirm the user again!
- *
- * @param app_ Firebase application reference
- * @returns {Promise<void | string>} A promise for the result, or an error message
- */
-function authDeleteUser(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  const user = auth.currentUser;
-
-  if (user) {
-    // User logged in -> delete
-    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.deleteUser)(user)
-      .then(() => {
-        alert('Your account has been successfully deleted');
-        document.location.href = '../auth-test/signin.html';
-      })
-      .catch((err) => {
-        alert('Error during user deletion\n(' + err.code + ') ' + err.message);
-      });
-  } else {
-    // User not logged in
-    alert('User not logged in');
-  }
-}
-
-/**
- * Send Password Reset Email
- * @param app_ Firebase application reference
- * @param email_ Email address of the user
- */
-async function authForgotPassword(app_, email_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendPasswordResetEmail)(auth, email_)
-      .then(resolve)
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Get the uid of the user
- * @param app_ Firebase application reference
- * @returns {string} User's uid
- */
-function authGetUserUID(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  return auth.currentUser.displayName;
-}
-
-/**
- * Send Passwordless Sign-in Link
- * @param app_ Firebase application reference
- * @param email_ Email address of the user
- */
-async function authPWLessSignIn(app_, email_) {
-  const actionCodeSettings = {
-    url: 'http://localhost:5500/profile/profile.html',
-    handleCodeInApp: true,
-  };
-
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  let success;
-
-  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendSignInLinkToEmail)(auth, email_, actionCodeSettings)
-    .then(() => {
-      window.localStorage.setItem('emailForSignIn', email_);
-      success = true;
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      alert('errorCode: ' + errorCode + '\n errorMessage:' + errorMessage);
-      success = false;
-    });
-  return success;
-}
-
-/**
- * Check Sign-in status
- * @param app_ Firebase application reference
- * @param loadContents Page contents load reference
- */
-async function checkSignin(app_, loadContents) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.onAuthStateChanged)(auth, async (user) => {
-    if (user) {
-      // alert('Hello ' + user.email);
-      loadContents();
-    } else {
-      await isPasswordless(app_).then((resolve) => {
-        if (resolve) {
-        } else {
-          document.location.href = '../auth-test/signin.html';
-        }
-      });
-    }
-  });
-}
-
-/**
- * Check if the user logged through Passwordless sign-in
- * @param app_ Firebase application reference
- */
-async function isPasswordless(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  let success;
-  if ((0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.isSignInWithEmailLink)(auth, window.location.href)) {
-    let email = window.localStorage.getItem('emailForSignIn');
-    if (!email) {
-      email = window.prompt('Please provide your email for confirmation');
-    }
-
-    await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.signInWithEmailLink)(auth, email, window.location.href)
-      .then((result) => {
-        console.log(result);
-
-        window.localStorage.removeItem('emailForSignIn');
-        (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.onAuthStateChanged)(auth, (user) => {
-          console.log(user);
-        });
-        success = true;
-      })
-      .catch((error) => {
-        console.log(error);
-        success = false;
-      });
-  } else {
-    success = false;
-  }
-  return success;
-}
-
-/**
- * Change display name of a user
- * @param app_ Firebase application reference
- * @param name_ Input name for name change
- */
-async function changeDisplayName(app_, name_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.updateProfile)(auth.currentUser, {
-    displayName: name_,
-  })
-    .then(() => {
-      console.log('displayName changed');
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-}
-
-/**
- * Refresh contents of the page upon change
- * @param app_ Firebase application reference
- */
-function refreshContents(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-  return auth.currentUser;
-}
-
-/**
- * Send a verification email to new user
- * @param app_ Firebase application reference
- * @returns {Promise<string>} A promise of a result message
- */
-async function authSendVerificationEmail(app_) {
-  const auth = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.getAuth)(app_);
-
-  return new Promise((resolve, reject) => {
-    if (!auth.currentUser.emailVerified) {
-      (0,firebase_auth__WEBPACK_IMPORTED_MODULE_0__.sendEmailVerification)(auth.currentUser)
-        .then(() => resolve('Sent a verification email to\n' + auth.currentUser.email))
-        .catch((err) => reject(err.message));
-    } else reject('Email already verified');
-  });
-}
-
-
-/***/ }),
-
-/***/ "./src/firebase-rdb.js":
-/*!*****************************!*\
-  !*** ./src/firebase-rdb.js ***!
-  \*****************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "rdbSendMessage": () => (/* binding */ rdbSendMessage),
-/* harmony export */   "rdbDeleteMessage": () => (/* binding */ rdbDeleteMessage),
-/* harmony export */   "rdbExecuteNewChat": () => (/* binding */ rdbExecuteNewChat),
-/* harmony export */   "rdbExecuteDeleteChat": () => (/* binding */ rdbExecuteDeleteChat),
-/* harmony export */   "rdbExecuteUserJoined": () => (/* binding */ rdbExecuteUserJoined),
-/* harmony export */   "rdbExecuteUserLeft": () => (/* binding */ rdbExecuteUserLeft),
-/* harmony export */   "rdbGetUserJoinedChatRooms": () => (/* binding */ rdbGetUserJoinedChatRooms),
-/* harmony export */   "rdbGetChatFromChatRoom": () => (/* binding */ rdbGetChatFromChatRoom),
-/* harmony export */   "rdbGetMembersFromChatRoom": () => (/* binding */ rdbGetMembersFromChatRoom),
-/* harmony export */   "rdbChatRoomJoinUser": () => (/* binding */ rdbChatRoomJoinUser),
-/* harmony export */   "rdbChatRoomLeaveUser": () => (/* binding */ rdbChatRoomLeaveUser),
-/* harmony export */   "rdbGetRoomTitle": () => (/* binding */ rdbGetRoomTitle),
-/* harmony export */   "rdbGetUserInfoFromID": () => (/* binding */ rdbGetUserInfoFromID),
-/* harmony export */   "rdbCheckIfIDExists": () => (/* binding */ rdbCheckIfIDExists),
-/* harmony export */   "rdbCreateNewRoom": () => (/* binding */ rdbCreateNewRoom),
-/* harmony export */   "rdbChangeName": () => (/* binding */ rdbChangeName)
-/* harmony export */ });
-/* harmony import */ var firebase_database__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/database */ "./node_modules/firebase/database/dist/index.esm.js");
-
-
-/**
- * Send a new message
- *
- * Usage:
- * Send a text message: `rdbSendMessage(app, "hyunsoo", "room_2", "message", "Meet me at 6!").then(() => alert("Message sent!"))
- * Send an image: `rdbSendMessage(app, "hyunsoo", "room_1", "image", "path_to_file_in_firebase_storage").then(() => alert("Image sent!"))
- * Note that you have to upload the image using `storageUpload()` to get a path of image on Firebase Storage before sending an image
- *
- * @param app_ Firebase application reference
- * @param userID {string} User ID
- * @param roomID {string} ID of the room
- * @param messageType {string} Type of the message (for example, message, image)
- * @param content{string} Content of the message (text, Firebase Storage path)
- * @returns {Promise<void | string>} Promise of the result, or an error message
- */
-async function rdbSendMessage(app_, userID, roomID, messageType, content) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/rooms/' + roomID + '/'); // Reference to chats/room/roomID
-
-  // Get the ID of the last message
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(roomRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          // ID of the new message
-          const newMessageIndex = snapshot.val()['last_message'] + 1;
-
-          // Object of the new message
-          let newMessageObject = {
-            message_index: newMessageIndex,
-            user: userID,
-            time: new Date().valueOf(),
-          };
-          newMessageObject[messageType] = content;
-
-          // Add a new child to chats/messages/roomID/newMessageID with chat contents
-          (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.set)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/' + newMessageIndex), newMessageObject).catch((err) => {
-            alert('Error while adding new message\n(' + err.code + ') ' + err.message);
-          });
-
-          // Update last-message of room
-          (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(roomRef, {
-            last_message: newMessageIndex,
-          })
-            .then(resolve)
-            .catch((err) => reject(err.message));
-        } else {
-          // New chat room with no message
-          // TODO: Create new room
-          reject('Create new room not supported yet');
-        }
-      })
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Delete (Mark as deleted) a sent message
- *
- * Usage: `rdbDeleteMessage(app, "hyunsoo", "room_1", "m13").then(() => alert("Message deleted!"))
- *
- * @param app_ Firebase application reference
- * @param userID{string} Current user ID
- * @param roomID{string} Room ID
- * @param chatID{number} Chat ID to delete
- * @returns {Promise<void | string>} A promise of the result, or an error message
- */
-async function rdbDeleteMessage(app_, userID, roomID, chatID) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const chatRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/' + chatID + '/');
-
-  // Mark message as deleted
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(chatRef, { deleted: true })
-      .then(resolve)
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Execute a function whenever the a new child is appended (a new chat is updated)
- * The function is also executed for every children when the listener is set up for the first time.
- *
- * Note that chat ID and data is passed as first and second arguments to func
- *
- * Usage: `unsubscriber = rdbExecuteNewChat(updateButton, document.getElementById('update-button')`
- * executes `updateButton(ID, chat data, document.getElementById('update-button'))` whenever the database is updated,
- * and execute `unsubscriber()` to cancel listening
- *
- * @param app_ Firebase application reference
- * @param func{function} Function to execute
- * @param roomID{string} Room ID
- * @param args Arguments to pass
- * @returns function A function to cancel listening
- */
-function rdbExecuteNewChat(app_, func, roomID, ...args) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const messagesRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/');
-
-  // New chat added
-  return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildAdded)(
-    messagesRef,
-    (snapshot) => func(snapshot.val().message_index, snapshot.val(), ...args),
-    (err) => alert(err.message)
-  );
-}
-
-/**
- * Execute a function whenever the a new child is modified
- *
- * Note that chat ID and data is passed as first and second arguments to func
- *
- * Usage: `unsubscriber = rdbExecuteDeleteChat(updateButton, document.getElementById('remove-id')`
- * executes `updateButton(ID, chat data, document.getElementById('remove-id'))` whenever the database is updated,
- * and execute `unsubscriber()` to cancel listening
- *
- * @param app_ Firebase application reference
- * @param func{function} Function to execute
- * @param roomID{string} Room ID
- * @param args Arguments to pass
- * @returns function Function to cancel listening
- */
-function rdbExecuteDeleteChat(app_, func, roomID, ...args) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const messagesRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/');
-
-  // Chat deleted -> new property 'deleted' is added to previous chat object
-  return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildChanged)(
-    messagesRef,
-    (snapshot) => {
-      func(snapshot.val().message_index, snapshot.val(), ...args);
-    },
-    (err) => alert(err.message)
-  );
-}
-
-/**
- * Execute a function whenever a new member joined
- * The function is also executed for every children when the listener is set up for the first time.
- *
- * Note that the first argument of 'func' will be the ID of the member
- *
- * Usage: `unsubscriber = rdbExecuteUserJoined(updateUserList, document.getElementById('user-lists')`
- * executes `updateUserList(ID, document.getElementById('user-lists'))` whenever the database is updated,
- * and execute `unsubscriber()` to cancel listening
- *
- * @param app_ Firebase application reference
- * @param func{function} Function to execute
- * @param roomID Room ID
- * @param args Arguments to pass
- * @return function Function to cancel listening
- */
-function rdbExecuteUserJoined(app_, func, roomID, ...args) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/members/' + roomID + '/');
-
-  // New member
-  return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildAdded)(
-    roomRef,
-    (snapshot) => func(snapshot.val(), ...args),
-    (err) => alert(err.message)
-  );
-}
-
-/**
- * Execute a function whenever a member left
- *
- * Note that the first argument of 'func' will be the ID of the user that left
- *
- * Usage: `unsubscriber = rdbExecuteUserLeft(updateLeftUser, document.getElementById('user-lists')`
- * executes `updateLeftUser(ID, document.getElementById('user-lists'))` whenever the database is updated,
- * and execute `unsubscriber()` to cancel listening
- *
- * @param app_ Firebase application reference
- * @param func{function} Function to execute
- * @param roomID Room ID
- * @param args Arguments to pass
- * @return function Function to cancel listening
- */
-function rdbExecuteUserLeft(app_, func, roomID, ...args) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/members/' + roomID + '/');
-
-  // Member left
-  return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildRemoved)(
-    roomRef,
-    (snapshot) => func(snapshot.val(), ...args),
-    (err) => alert(err.message)
-  );
-}
-
-/**
- * Get an array of room IDs the user joined
- *
- * Usage: `rdbGetUserJoinedChatRooms(app, "hyunsoo").then((rooms) => rooms.forEach(updateChatRoomList))`
- *
- * @param app_ Firebase application reference
- * @param userID {string} User ID
- * @returns {Promise<Array<string> | string>} A promise of array of string of room IDs, or an error message
- */
-async function rdbGetUserJoinedChatRooms(app_, userID) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'users/' + userID + '/');
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(userRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          // User exists
-          const joinedRoomsArray = snapshot.val()['joined_rooms'];
-
-          if (joinedRoomsArray === undefined) {
-            // User exists but has not joined any room
-            resolve([]);
-          } else {
-            resolve(Object.keys(snapshot.val()['joined_rooms']));
-          }
-        } else {
-          // User does not exist
-          reject('User does not exist');
-        }
-      })
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Get an object of all messages from a chat room
- *
- * @param app_ Firebase application reference
- * @param roomID{string} Room ID
- * @returns {Promise<object | string>} A promise of an object, or an error message
- */
-async function rdbGetChatFromChatRoom(app_, roomID) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const chatRoomMessagesRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/messages/' + roomID + '/');
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(chatRoomMessagesRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          // Chat room exists
-          resolve(snapshot.val());
-        } else {
-          // Chat room does not exist
-          reject('Chat room does not exist');
-        }
-      })
-      .catch((err) => {
-        reject(err.message);
-      });
-  });
-}
-
-/**
- * Get an array of all members in a chat room
- *
- * @param app_ Firebase application reference
- * @param roomID Room ID
- * @returns {Promise<array | string>} A promise of an array, or an error message
- */
-async function rdbGetMembersFromChatRoom(app_, roomID) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const chatRoomMembersRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/members/' + roomID + '/');
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(chatRoomMembersRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          // Room exists
-          resolve(Object.keys(snapshot.val()));
-        } else {
-          // Chat room does not exist
-          reject('Chat room does not exist');
-        }
-      })
-      .catch((err) => {
-        reject(err.message);
-      });
-  });
-}
-
-/**
- * Add user to a chat room
- *
- * Usage: `rdbChatRoomJoinUser(app, "hyunsoo", "room_3").then(() => alert("User Joined!"))`
- *
- * @param app_ Firebase application reference
- * @param userID{string} User ID
- * @param roomID{string} Room ID
- * @returns {Promise<void | string>} Promise of the result, or an error emssage
- */
-async function rdbChatRoomJoinUser(app_, userID, roomID) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const rootRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, '/');
-
-  let updateObject = {};
-  updateObject['/chats/members/' + roomID + '/' + userID] = userID;
-  updateObject['/users/' + userID + '/joined_rooms/' + roomID] = roomID;
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(rootRef, updateObject)
-      .then(resolve)
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Delete user from a chat room
- *
- * Usage: `rdbChatRoomLeaveUser(app, "hyunsoo", "room_3").then(() => alert("User left!"))`
- *
- * @param app_ Firebase application reference
- * @param userID{string} User ID
- * @param roomID{string} Room ID
- * @returns {Promise<void | string>} Promise of the result, or an error message
- */
-async function rdbChatRoomLeaveUser(app_, userID, roomID) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const rootRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, '/');
-
-  let updateObject = {};
-  updateObject['/chats/members/' + roomID + '/' + userID] = null;
-  updateObject['/users/' + userID + '/joined_rooms/' + roomID] = null;
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(rootRef, updateObject)
-      .then(resolve)
-      .catch((err) => reject(err.message));
-  });
-}
-
-/** Return the title of the room
- *
- * @param app_ Firebase application reference
- * @param roomID Room ID
- * @returns {Promise<string>} A promise of the room name, or an error message
- */
-async function rdbGetRoomTitle(app_, roomID) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'chats/rooms/' + roomID + '/');
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(roomRef)
-      .then((snapshot) => {
-        resolve(snapshot.val().title);
-      })
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Get user information
- *
- * @param app_ Firebase application reference
- * @param userID User ID
- * @param specificInfo{string} Specific information of the user to fetch (ex. email,name)
- * @returns {Promise<object | string>} A promise of the result, or an error message
- */
-async function rdbGetUserInfoFromID(app_, userID, specificInfo = '') {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'users/' + userID + '/' + specificInfo + '/');
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(userRef)
-      .then((snapshot) => resolve(snapshot.val()))
-      .catch((err) => reject(err.message));
-  });
-}
-
-async function rdbCheckIfIDExists(app_, userID) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const userRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, 'users/' + userID + '/');
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(userRef)
-      .then((snapshot) => {
-        resolve(snapshot.exists());
-      })
-      .catch((err) => reject(err.message));
-  });
-}
-
-async function rdbCreateNewRoom(app_, user1, user2) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-
-  // Check if id exists
-  return new Promise((resolve, reject) => {
-    Promise.all([rdbCheckIfIDExists(app_, user1), rdbCheckIfIDExists(app_, user2)])
-      .then(([id1, id2]) => {
-        if (id1 && id2) {
-          // Both ID Valid
-          const roomID = (new Date().valueOf() + Math.floor(Math.random() * 10000000000000)).toString(10);
-
-          let newData = {};
-          newData['chats/members/' + roomID + '/' + user1] = user1;
-          newData['chats/members/' + roomID + '/' + user2] = user2;
-
-          newData['users/' + user1 + '/joined_rooms/' + roomID] = roomID;
-          newData['users/' + user2 + '/joined_rooms/' + roomID] = roomID;
-
-          newData['chats/messages/' + roomID] = {};
-          newData['chats/rooms/' + roomID] = { last_message: 0, title: 'Chat room' };
-
-          (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, '/'), newData)
-            .then(resolve)
-            .catch((err) => reject(err.message));
-        }
-      })
-      .catch(reject);
-  });
-}
-
-async function rdbChangeName(app_, userID, newName) {
-  const db = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.getDatabase)(app_);
-  const rootRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db, '/');
-
-  let updateObject = {};
-  updateObject['/users/' + userID + '/name/'] = newName;
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)(rootRef, updateObject)
-      .then(resolve)
-      .catch((err) => reject(err.message));
-  });
-}
-
-
-/***/ }),
-
-/***/ "./src/firebase-storage.js":
-/*!*********************************!*\
-  !*** ./src/firebase-storage.js ***!
-  \*********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "storageUpload": () => (/* binding */ storageUpload),
-/* harmony export */   "storageDelete": () => (/* binding */ storageDelete),
-/* harmony export */   "storageView": () => (/* binding */ storageView),
-/* harmony export */   "storageGetURL": () => (/* binding */ storageGetURL)
-/* harmony export */ });
-/* harmony import */ var firebase_storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/storage */ "./node_modules/firebase/storage/dist/index.esm.js");
-
-
-/**
- * Upload a file to the storage
- *
- * Usage: `storageUpload(app, File, "images/room_1/img_1.jpg").then((r) => alert("File uploaded to: " + r))`
- *
- * @param app_ Firebase application reference
- * @param src {File} Source path of the file
- * @param dest {string} Destination path of the file
- * @returns {Promise<string>}
- * Returns a promise for the path of the uploaded file of whether the upload was successful,
- * or an error message if not successful
- */
-async function storageUpload(app_, src, dest) {
-  // Storage and reference
-  const storage = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getStorage)(app_);
-  const uploadRef = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.ref)(storage, dest);
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.uploadBytes)(uploadRef, src)
-      .then((r) => resolve(r.ref.fullPath))
-      .catch(reject);
-  });
-}
-
-/**
- * Delete a file from the storage
- *
- * Usage: `storageDelete(app, "images/room_1/img_1.jpg").then(() => alert("File deleted"))`
- *
- * @param app_ Firebase application reference
- * @param file Path of the file to be deleted
- * @returns {Promise<void | string>} Returns a promise of whether deleting the file was successful,
- * or an error message if not successful
- */
-async function storageDelete(app_, file) {
-  // Storage and reference
-  const storage = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getStorage)(app_);
-  const fileRef = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.ref)(storage, file);
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.deleteObject)(fileRef)
-      .then(resolve)
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * View a list of files from the directory
- *
- * Usage: `storageView(app, "images/room_1/").then((files) => files.forEach((file) => addFileListView(file))`
- *
- * @param app_ Firebase application reference
- * @param dir Path of the directory
- * @returns {Promise<string>} A promise of a string representation of the list of the files if the directory exists,
- * or an error message if not successful
- */
-async function storageView(app_, dir) {
-  // Storage and reference
-  const storage = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getStorage)(app_);
-  const dirRef = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.ref)(storage, dir);
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.list)(dirRef)
-      .then((r) => resolve(r.items))
-      .catch((err) => reject(err.message));
-  });
-}
-
-/**
- * Get an URL for the file
- *
- * Usage: `storageGetURL(app, "images/room_1/cat.jpg").then((img) => image.src = img)`
- *
- * @param app_ Firebase application reference
- * @param file Path to file
- * @returns {Promise<string>} A promise of an URL
- */
-async function storageGetURL(app_, file) {
-  // Storage and reference
-  const storage = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getStorage)(app_);
-  const fileRef = (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.ref)(storage, file);
-
-  return new Promise((resolve, reject) => {
-    (0,firebase_storage__WEBPACK_IMPORTED_MODULE_0__.getDownloadURL)(fileRef)
-      .then(resolve)
-      .catch((err) => reject(err.message));
-  });
-}
-
-
-/***/ }),
-
-/***/ "./src/firebase.js":
-/*!*************************!*\
-  !*** ./src/firebase.js ***!
-  \*************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "app": () => (/* binding */ app)
-/* harmony export */ });
-/* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/app */ "./node_modules/firebase/app/dist/index.esm.js");
-// Initialize Firebase app with API key of our app
-
-
-/**
- * API Keys for Firebase Application
- * @type {{storageBucket: string, apiKey: string, messagingSenderId: string, appId: string, projectId: string, databaseURL: string, authDomain: string}}
- */
-const firebaseConfig = {
-    apiKey: "AIzaSyBxDGM7VmgHG-Yvy6LPuKDT3C3JIArHPkg",
-    authDomain: "skku-web-chat.firebaseapp.com",
-    databaseURL: "https://skku-web-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "skku-web-chat",
-    storageBucket: "skku-web-chat.appspot.com",
-    messagingSenderId: "1006166323603",
-    appId: "1:1006166323603:web:35ac99e8c5e83faa55f866",
-};
-
-/**
- * Application reference for accessing Firebase
- * @type {FirebaseApp}
- */
-const app = (0,firebase_app__WEBPACK_IMPORTED_MODULE_0__.initializeApp)(firebaseConfig);
-
-
-
-
-/***/ }),
-
-/***/ "./node_modules/@firebase/app/dist/esm/index.esm2017.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/@firebase/app/dist/esm/index.esm2017.js ***!
-  \**************************************************************/
+/***/ "../../node_modules/@firebase/app/dist/esm/index.esm2017.js":
+/*!******************************************************************!*\
+  !*** ../../node_modules/@firebase/app/dist/esm/index.esm2017.js ***!
+  \******************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -30598,9 +30625,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "registerVersion": () => (/* binding */ registerVersion),
 /* harmony export */   "setLogLevel": () => (/* binding */ setLogLevel)
 /* harmony export */ });
-/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/component */ "./node_modules/@firebase/component/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/logger */ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js");
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/component */ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @firebase/logger */ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
 
 
 
@@ -31199,10 +31226,10 @@ registerCoreComponents('');
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/component/dist/esm/index.esm2017.js":
-/*!********************************************************************!*\
-  !*** ./node_modules/@firebase/component/dist/esm/index.esm2017.js ***!
-  \********************************************************************/
+/***/ "../../node_modules/@firebase/component/dist/esm/index.esm2017.js":
+/*!************************************************************************!*\
+  !*** ../../node_modules/@firebase/component/dist/esm/index.esm2017.js ***!
+  \************************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -31211,7 +31238,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "ComponentContainer": () => (/* binding */ ComponentContainer),
 /* harmony export */   "Provider": () => (/* binding */ Provider)
 /* harmony export */ });
-/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/util */ "./node_modules/@firebase/util/dist/index.esm2017.js");
+/* harmony import */ var _firebase_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @firebase/util */ "../../node_modules/@firebase/util/dist/index.esm2017.js");
 
 
 /**
@@ -31625,10 +31652,10 @@ class ComponentContainer {
 
 /***/ }),
 
-/***/ "./node_modules/@firebase/logger/dist/esm/index.esm2017.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/@firebase/logger/dist/esm/index.esm2017.js ***!
-  \*****************************************************************/
+/***/ "../../node_modules/@firebase/logger/dist/esm/index.esm2017.js":
+/*!*********************************************************************!*\
+  !*** ../../node_modules/@firebase/logger/dist/esm/index.esm2017.js ***!
+  \*********************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -31939,7 +31966,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_firebase_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../src/firebase-auth */ "./src/firebase-auth.js");
 /* harmony import */ var _src_firebase_rdb__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../src/firebase-rdb */ "./src/firebase-rdb.js");
 /* harmony import */ var _src_firebase_storage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../src/firebase-storage */ "./src/firebase-storage.js");
-/* harmony import */ var firebase_auth__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! firebase/auth */ "./node_modules/firebase/auth/dist/index.esm.js");
+/* harmony import */ var firebase_auth__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! firebase/auth */ "../../node_modules/firebase/auth/dist/index.esm.js");
 /* harmony import */ var _src_firebase__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../src/firebase */ "./src/firebase.js");
 
 
