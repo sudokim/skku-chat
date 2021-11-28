@@ -135,7 +135,14 @@ color: rgba(255,255,255,0.6);
 
 #chat-room-list-header{
   width: 300px;
+  color: white;
 }
+
+
+#chats-header{
+  color: white;
+  }
+
 
  /* #chat-input-message{
   width: 100%;
@@ -143,12 +150,21 @@ color: rgba(255,255,255,0.6);
 } */
 
 .chat-room-item {
-  border: black solid 1px;
+ /* border: rgba(219, 47, 47, 0.61) solid 1px;
   margin-top: 10px;
   margin-bottom:10px;
   margin-left: 100px;
   margin-right: 10px;
-  padding: 5px;
+  padding: 5px; */
+
+margin-top: 10px;
+margin-bottom: 10px;
+margin-right: 10px;
+margin-left: 100px;
+border-radius: 25px;
+background-color: #7F7FD5;
+padding: 5px;
+position: relative;
 }
 
 strong.chat-room-item {
@@ -170,13 +186,22 @@ i.chat-room-item {
 
 .chat-bubble {
 
-  /* Chat bubbles */
+  /* Chat bubbles
   margin: 10px;
   padding: 3px;
-  border: black solid 1px;
+  border: black solid 10px;
   text-align: left;
   width: 400px;
-
+*/
+margin-top: 10px;
+margin-bottom: 10px;
+margin-left: 10px;
+margin-right: 350px;
+border-radius: 25px;
+background-color: #82ccdd;
+padding: 10px;
+position: relative;
+text-align: left;
 }
 
 .chat-bubble-self {
@@ -185,7 +210,7 @@ i.chat-room-item {
 margin-top: 10px;
 margin-bottom: 10px;
 margin-right: 10px;
-margin-left: 250px;
+margin-left: 300px;
 border-radius: 25px;
 background-color: #78e08f;
 padding: 3px;
