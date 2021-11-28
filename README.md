@@ -2,6 +2,8 @@
 
 **SKKU Web Chat** is a simple chat app. This chat app makes it possible for verified SKKU students to chat with eachother. In order to use this chat app you will need to have access to a valid SKKU email.
 
+Access here: https://sudokim.github.io/skku-web-chat
+
 
 # Demo
 Post gif here
