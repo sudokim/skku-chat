@@ -5,6 +5,7 @@ import * as rdb from '../src/firebase-rdb';
 let currentUser;
 let name;
 const displayChatrooms = async (joinedRooms) => {
+  document.getElementById('recent-chats').innerHTML = '';
   if (!joinedRooms.length) {
     document.getElementById('recent-chats').innerHTML = `<li class="list-group-item">
       <div class="contact-wrapper">
