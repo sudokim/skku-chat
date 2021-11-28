@@ -350,3 +350,22 @@ export async function rdbGetRoomTitle(app_, roomID) {
       .catch((err) => reject(err.message));
   });
 }
+
+/**
+ * Get user information
+ *
+ * @param app_ Firebase application reference
+ * @param userID User ID
+ * @param specificInfo{string} Specific information of the user to fetch (ex. email,name)
+ * @returns {Promise<object | string>} A promise of the result, or an error message
+ */
+export async function rdbGetUserInfoFromID(app_, userID, specificInfo = '') {
+  const db = getDatabase(app_);
+  const userRef = ref(db, 'users/' + userID + '/' + specificInfo + '/');
+
+  return new Promise((resolve, reject) => {
+    get(userRef)
+      .then((snapshot) => resolve(snapshot.val()))
+      .catch((err) => reject(err.message));
+  });
+}
