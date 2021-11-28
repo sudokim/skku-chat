@@ -13,7 +13,7 @@ const login = () => {
       if (!resolve) {
         log.innerHTML = 'Either email address or username is wrong.';
       } else {
-        document.location.href = '../chats/chats.html';
+        document.location.href = '../profile/profile.html';
       }
       signinBtn.innerHTML = 'Sign in';
     })

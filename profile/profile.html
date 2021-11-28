@@ -51,6 +51,7 @@
             <h2 id="header-display-name"></h2>
             <p>Your personal information</p>
             <button type="button" id="sign-out-btn" class="btn btn-primary">Sign out</button>
+            <button type="button" id="go-to-chatroom-btn" class="btn btn-warning">Chatroom</button>
           </div>
         </header>
         <main>
@@ -76,6 +77,18 @@
                         />
                         <span class="input-group-text">@</span>
                         <input aria-label="Username" class="form-control" id="user-email-domain" type="text" disabled />
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <label class="col-sm-2 col-form-label" for="user-display-id" style="min-width: fit-content"
+                      >ID:</label
+                    >
+                    <div class="col">
+                      <div class="input-group">
+                        <input aria-label="Username" class="form-control" id="user-display-id" type="text" disabled />
                       </div>
                     </div>
                   </div>
@@ -144,108 +157,9 @@
         <header></header>
         <main>
           <div class="card text-dark bg-light mb-3">
-            <div class="card-header">Chat Rooms</div>
+            <div class="card-header">Recent Chats</div>
             <div class="card-body">
-              <ul class="list-group" id="advanced-list-group">
-                <li class="list-group-item">
-                  <div class="contact-wrapper">
-                    <div class="contact-pic">
-                      <img
-                        src=""
-                        alt=""
-                        onerror="this.src='https://www.royalunibrew.com/wp-content/uploads/2021/07/blank-profile-picture-973460_640.png'"
-                      />
-                    </div>
-                    <div class="contact-content">
-                      <h3>Chatroom 1</h3>
-                      <p>Friend: I saw a movie yesterday</p>
-                    </div>
-                  </div>
-                </li>
-                <li class="list-group-item">
-                  <div class="contact-wrapper">
-                    <div class="contact-pic">
-                      <img
-                        src=""
-                        alt=""
-                        onerror="this.src='https://www.royalunibrew.com/wp-content/uploads/2021/07/blank-profile-picture-973460_640.png'"
-                      />
-                    </div>
-                    <div class="contact-content">
-                      <h3>Chatroom 2</h3>
-                      <p>Friend 2: TEXTOVERFLOW EXAMPLE</p>
-                    </div>
-                  </div>
-                </li>
-                <li class="list-group-item">
-                  <div class="contact-wrapper">
-                    <div class="contact-pic">
-                      <img
-                        src=""
-                        alt=""
-                        onerror="this.src='https://www.royalunibrew.com/wp-content/uploads/2021/07/blank-profile-picture-973460_640.png'"
-                      />
-                    </div>
-                    <div class="contact-content">
-                      <h3>Chatroom 3</h3>
-                      <p>Me: I went home yesterday</p>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="card text-dark bg-light mb-3">
-            <div class="card-header">Friend List</div>
-            <div class="card-body">
-              <ul class="list-group" id="advanced-list-group">
-                <li class="list-group-item">
-                  <div class="contact-wrapper">
-                    <div class="contact-pic">
-                      <img
-                        src=""
-                        alt=""
-                        onerror="this.src='https://www.royalunibrew.com/wp-content/uploads/2021/07/blank-profile-picture-973460_640.png'"
-                      />
-                    </div>
-                    <div class="contact-content">
-                      <h3>Friend 1</h3>
-                      <p>"<span>I'm happy!</span>"</p>
-                    </div>
-                  </div>
-                </li>
-                <li class="list-group-item">
-                  <div class="contact-wrapper">
-                    <div class="contact-pic">
-                      <img
-                        src=""
-                        alt=""
-                        onerror="this.src='https://www.royalunibrew.com/wp-content/uploads/2021/07/blank-profile-picture-973460_640.png'"
-                      />
-                    </div>
-                    <div class="contact-content">
-                      <h3>Friend 2</h3>
-                      <p>"<span>I'm playing lol</span>"</p>
-                    </div>
-                  </div>
-                </li>
-                <li class="list-group-item">
-                  <div class="contact-wrapper">
-                    <div class="contact-pic">
-                      <img
-                        src=""
-                        alt=""
-                        onerror="this.src='https://www.royalunibrew.com/wp-content/uploads/2021/07/blank-profile-picture-973460_640.png'"
-                      />
-                    </div>
-                    <div class="contact-content">
-                      <h3>Friend 3</h3>
-                      <p>"<span>I'm studying</span>"</p>
-                    </div>
-                  </div>
-                </li>
-              </ul>
+              <ul class="list-group" id="recent-chats"></ul>
             </div>
           </div>
         </main>

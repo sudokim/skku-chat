@@ -405,11 +405,24 @@ export async function rdbCreateNewRoom(app_, user1, user2) {
           newData['chats/rooms/' + roomID] = { last_message: 0, title: 'Chat room' };
 
           update(ref(db, '/'), newData)
-              .then(resolve)
-              .catch((err) => reject(err.message))
+            .then(resolve)
+            .catch((err) => reject(err.message));
         }
       })
       .catch(reject);
   });
 }
 
+export async function rdbChangeName(app_, userID, newName) {
+  const db = getDatabase(app_);
+  const rootRef = ref(db, '/');
+
+  let updateObject = {};
+  updateObject['/users/' + userID + '/name/'] = newName;
+
+  return new Promise((resolve, reject) => {
+    update(rootRef, updateObject)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
+}
