@@ -2,17 +2,13 @@ import {
   createUserWithEmailAndPassword,
   deleteUser,
   getAuth,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-  signOut,
-
+  isSignInWithEmailLink,
+  onAuthStateChanged,
   sendPasswordResetEmail,
   sendSignInLinkToEmail,
-  setPersistence,
-  browserLocalPersistence,
-  onAuthStateChanged,
+  signInWithEmailAndPassword,
   signInWithEmailLink,
-  isSignInWithEmailLink,
+  signOut,
   updateProfile,
 } from 'firebase/auth';
 import { get, getDatabase, ref, set } from 'firebase/database';
@@ -101,7 +97,6 @@ export async function authSignIn(app_, email_, password_) {
       })
       .catch((err) => reject(err.message));
   });
-
 }
 
 /**
@@ -304,6 +299,6 @@ export async function changeDisplayName(app_, name_) {
  */
 
 export function refreshContents(app_) {
-  const auth = getAuth(app_);
-  return auth.currentUser;
+    const auth = getAuth(app_);
+    return auth.currentUser;
 }
