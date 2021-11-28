@@ -31,16 +31,17 @@
   <div class="row justify-content-center h-100">
 
     <div class="col-md-4 col-xl-3 chat">
-      <div class="card mb-sm-3 mb-md-0 contacts_card">
+      <div class="card px-4 mb-sm-3 mb-md-0 contacts_card">
         <div class="card-header">
 
         </div>
         <div class="card-body contacts_body">
 
           <div id="chat-room-list-header">
-            <button class="btn btn-success" id="btn-create-new-room" type="button" >Create new room</button>
-            <a href="../auth-test/signin.html"><button type="button" class="btn btn-danger">Sign out</button></a>
-            <div id="chat-room-list">Loading rooms...</div>
+            <button class="btn btn-primary" id="btn-create-new-room" type="button" >New chat</button>
+            <a href="../profile/profile.html"><button class="btn btn-light" id="btn-view-profile" type="button">Profile</button></a>
+            <button class="btn btn-dark" id="btn-sign-out" type="button">Sign out</button>
+            <div class="my-3" id="chat-room-list">Loading rooms...</div>
           </div>
 
 
@@ -58,18 +59,14 @@
         <div class="card-header msg_head">
           <div class="d-flex bd-highlight">
 
-            <div class="img_cont">
-              <img class="rounded-circle user_img" src="SKKU-LOGO.png">
-            </div>
             <div class="user_info">
 
               <div id="chats-header">
 
                 <strong id="chats-header-room-title"></strong><br/>
-                <i id="chats-header-room-members"></i>
+                <small id="chats-header-room-members"></small>
 
               </div>
-              <a href="../profile/profile.html" style="text-align: right">Profile</a>
 
             </div>
 

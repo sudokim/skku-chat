@@ -104,7 +104,7 @@ function addNewChatList(roomID, roomTitle, roomMembers) {
   // Create room title and members below new div
   // Edit tags here and CSS to change the look
   const newChatListTitle = document.createElement('strong');
-  const newChatListMembers = document.createElement('i');
+  const newChatListMembers = document.createElement('span');
 
   newChatListTitle.innerText = roomTitle;
   newChatListMembers.innerText = roomMembers.join(', ');
@@ -321,3 +321,8 @@ window.onload = function () {
 document.getElementById('chat-send-image').addEventListener('click', sendImage);
 document.getElementById('chat-send-message').addEventListener('click', sendChat);
 document.getElementById('btn-create-new-room').addEventListener('click', newRoom);
+document.getElementById('btn-sign-out').addEventListener('click', (l) => {
+  auth.authSignOut(app)
+      .then(() => document.location.href = "../auth-test/signin.html")
+      .catch(alert)
+})
