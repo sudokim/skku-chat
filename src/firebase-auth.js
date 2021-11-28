@@ -194,7 +194,11 @@ export function authGetUserUID(app_) {
  */
 export async function authPWLessSignIn(app_, email_) {
   const actionCodeSettings = {
-    url: 'http://localhost:5500/profile/profile.html',
+    // For development
+    // url: 'http://localhost:5500/profile/profile.html',
+
+    // For production change it
+    url: 'https://sudokim.github.io/skku-web-chat/profile/profile.html',
     handleCodeInApp: true,
   };
 
