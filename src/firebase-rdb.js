@@ -369,3 +369,47 @@ export async function rdbGetUserInfoFromID(app_, userID, specificInfo = '') {
       .catch((err) => reject(err.message));
   });
 }
+
+export async function rdbCheckIfIDExists(app_, userID) {
+  const db = getDatabase(app_);
+  const userRef = ref(db, 'users/' + userID + '/');
+
+  return new Promise((resolve, reject) => {
+    get(userRef)
+      .then((snapshot) => {
+        resolve(snapshot.exists());
+      })
+      .catch((err) => reject(err.message));
+  });
+}
+
+export async function rdbCreateNewRoom(app_, user1, user2) {
+  const db = getDatabase(app_);
+
+  // Check if id exists
+  return new Promise((resolve, reject) => {
+    Promise.all([rdbCheckIfIDExists(app_, user1), rdbCheckIfIDExists(app_, user2)])
+      .then(([id1, id2]) => {
+        if (id1 && id2) {
+          // Both ID Valid
+          const roomID = (new Date().valueOf() + Math.floor(Math.random() * 10000000000000)).toString(10);
+
+          let newData = {};
+          newData['chats/members/' + roomID + '/' + user1] = user1;
+          newData['chats/members/' + roomID + '/' + user2] = user2;
+
+          newData['users/' + user1 + '/joined_rooms/' + roomID] = roomID;
+          newData['users/' + user2 + '/joined_rooms/' + roomID] = roomID;
+
+          newData['chats/messages/' + roomID] = {};
+          newData['chats/rooms/' + roomID] = { last_message: 0, title: 'Chat room' };
+
+          update(ref(db, '/'), newData)
+              .then(resolve)
+              .catch((err) => reject(err.message))
+        }
+      })
+      .catch(reject);
+  });
+}
+

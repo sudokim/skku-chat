@@ -5,7 +5,9 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
 } from 'firebase/auth';
+import { get, getDatabase, ref, set } from 'firebase/database';
 
 /**
  * Sign up for a new account
@@ -13,9 +15,11 @@ import {
  * @param app_ Firebase application reference
  * @param email_{string} Email address of the user
  * @param password_{string} Password of the user
+ * @param name_{string} Name of the user
+ * @param id_{string} ID of the user
  * @returns {Promise<UserCredential | string>} A promise of an UserCredential of the new account, or an error message
  */
-export function authSignUp(app_, email_, password_) {
+export function authSignUp(app_, email_, password_, name_, id_) {
   // Email validity check
   const skku_domain = ['skku.edu', 'g.skku.edu', 'o365.skku.edu'];
   const re =
@@ -28,13 +32,42 @@ export function authSignUp(app_, email_, password_) {
       // Valid email used, proceed with sign up
       const auth = getAuth(app_);
 
-      createUserWithEmailAndPassword(auth, email_, password_)
-        .then((uc) => {
-          alert('User created\n' + uc.user.email);
-          // TODO: Email verification
-          resolve(uc);
+      // Check if id is unique
+      const db = getDatabase(app_);
+      const accountRef = ref(db, 'users/' + id_ + '/');
+      let isUserIdValid = true;
+
+      get(accountRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            reject('ID already in use');
+            isUserIdValid = false;
+          }
+
+          if (isUserIdValid) {
+            createUserWithEmailAndPassword(auth, email_, password_)
+              .then((uc) => {
+                // Update database structure
+                // Object for new user
+                let newUserUpdate = {
+                  email: email_,
+                  name: name_,
+                  joined_rooms: {},
+                  profile_image: '',
+                  status_message: '',
+                };
+
+                const db = getDatabase(app_);
+                const userRef = ref(db, 'users/' + id_ + '/');
+
+                Promise.all([updateProfile(uc.user, { displayName: id_ }), set(userRef, newUserUpdate)]).then(() => {
+                  resolve(uc);
+                });
+              })
+              .catch((err) => reject(err.message));
+          }
         })
-        .catch((err) => reject(err.message));
+        .catch((err) => alert(err.message));
     } else {
       // Invalid email used
       reject('Email address not valid');
@@ -56,7 +89,6 @@ export async function authSignIn(app_, email_, password_) {
   return new Promise((resolve, reject) => {
     signInWithEmailAndPassword(auth, email_, password_)
       .then((uc) => {
-        alert('Signed in as ' + uc.user.email);
         resolve(uc);
       })
       .catch((err) => reject(err.message));
@@ -121,28 +153,26 @@ export async function authDeleteUser(app_) {
 }
 
 /**
- * User forgot password
+ * Sign up for a new account
  * @param app_ Firebase application reference
  * @param email_ Email address of the user
  */
 export async function authForgotPassword(app_, email_) {
   const auth = getAuth(app_);
-  let success;
-  await sendPasswordResetEmail(auth, email_)
-    .then(() => {
-      success = true;
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      alert('errorCode: ' + errorCode + '\n errorMessage:' + errorMessage);
-      success = false;
-    });
-  return success;
+
+  return new Promise((resolve, reject) => {
+    sendPasswordResetEmail(auth, email_)
+      .then(resolve)
+      .catch((err) => reject(err.message));
+  });
 }
 
+/**
+ * Get the uid of the user
+ * @param app_ Firebase application reference
+ * @returns {string} User's uid
+ */
 export function authGetUserUID(app_) {
-  return getAuth(app_).currentUser.uid;
+  const auth = getAuth(app_);
+  return auth.currentUser.displayName;
 }
-
-export { getAuth };

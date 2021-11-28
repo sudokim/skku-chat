@@ -2,9 +2,6 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    auth: './auth/auth.js',
-    rdb: './rdb/rdb.js',
-    storage: './storage/storage.js',
     signin: './auth-test/signin.js',
     profile: './profile/profile.js',
     chats: './chats/chats.js',

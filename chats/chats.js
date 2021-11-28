@@ -1,6 +1,7 @@
 import * as auth from '../src/firebase-auth';
 import * as rdb from '../src/firebase-rdb';
 import * as storage from '../src/firebase-storage';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { app } from '../src/firebase';
 
 // Room ID of the chat room being displayed at chat-body
@@ -13,6 +14,7 @@ let unsubscribeNewChatListener;
 let unsubscribeDeletedChatListener;
 let unsubscribeUserJoinedListener;
 let unsubscribeUserLeftListener;
+let unsubscribeChatRoomUpdatedListener;
 
 /**
  * Display chats of roomID to HTML
@@ -145,8 +147,7 @@ function addNewChatBubble(chatID, chatData, chatBody) {
   // Check who sent the message
   const uid = auth.authGetUserUID(app);
 
-  // TODO: Replace "hyunsoo" with uid
-  if ('hyunsoo' === chatData.user) {
+  if (uid === chatData.user) {
     // Current user sent the chat
     newChatBubble.classList.add('chat-bubble-self');
   } else {
@@ -207,9 +208,11 @@ function sendChat() {
   const messageInput = document.getElementById('chat-input-message');
   if (messageInput.value.length === 0) return;
 
+  const uid = auth.authGetUserUID(app);
+
   // TODO: Change userID to uid
   rdb
-    .rdbSendMessage(app, 'hyunsoo', activatedChatRoomID, 'message', messageInput.value)
+    .rdbSendMessage(app, uid, activatedChatRoomID, 'message', messageInput.value)
     .then(() => (messageInput.value = ''))
     .catch(alert);
 }
@@ -223,6 +226,8 @@ function sendImage() {
   if (activatedChatRoomID === null) return;
 
   let fileSelectDialog = document.createElement('input');
+
+  const uid = auth.authGetUserUID(app);
 
   fileSelectDialog.type = 'file';
   fileSelectDialog.addEventListener('change', () => {
@@ -240,29 +245,38 @@ function sendImage() {
         'images/' + activatedChatRoomID + '/' + randomFileName + fileExtension
       )
       .then((imageRef) => {
-        // TODO: Change userID to uid
-        rdb.rdbSendMessage(app, 'hyunsoo', activatedChatRoomID, 'image', imageRef).then(() => alert('Image uploaded!'));
+        rdb.rdbSendMessage(app, uid, activatedChatRoomID, 'image', imageRef).then(() => alert('Image uploaded!'));
       })
       .catch(alert);
   });
   fileSelectDialog.click();
 }
 
-window.onload = function () {
-  // TODO: Remove temp. sign in for debugging
-  auth.authSignIn(app, 'khs1778@skku.edu', '12345678').then(() => {
-    if (!auth.authSignInStatus(app)) {
-      // User not signed in
-      alert('Not logged in!');
+function newRoom() {
+  let otherUserID = window.prompt('Input the ID of the user to invite');
 
-      // TODO: Redirect to signin.html
-    }
+  if ((otherUserID !== null) && (otherUserID !== "")) {
+    rdb
+      .rdbCreateNewRoom(app, auth.authGetUserUID(app), otherUserID)
+      .then(() => {
+        alert('Created new chat room');
+        window.location.reload()
+      })
+      .catch(alert);
+  }
+}
 
+function loadDocument() {
+  if (!auth.authSignInStatus(app)) {
+    // User not signed in
+    alert('Not logged in!');
+
+    // TODO: Redirect to signin.html
+  } else {
     const uid = auth.authGetUserUID(app);
 
-    // TODO: Replace "hyunsoo" with real uid
     rdb
-      .rdbGetUserJoinedChatRooms(app, 'hyunsoo')
+      .rdbGetUserJoinedChatRooms(app, uid)
       .then((rooms) => {
         // Clear loading rooms...
         document.getElementById('chat-room-list').innerHTML = '';
@@ -277,8 +291,15 @@ window.onload = function () {
         });
       })
       .catch(alert);
-  });
+  }
+}
+
+window.onload = function () {
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, loadDocument);
 };
 
 document.getElementById('chat-send-image').addEventListener('click', sendImage);
 document.getElementById('chat-send-message').addEventListener('click', sendChat);
+document.getElementById('btn-create-new-room').addEventListener('click', newRoom);
