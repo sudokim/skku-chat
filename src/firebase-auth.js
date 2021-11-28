@@ -4,6 +4,7 @@ import {
   getAuth,
   isSignInWithEmailLink,
   onAuthStateChanged,
+  sendEmailVerification,
   sendPasswordResetEmail,
   sendSignInLinkToEmail,
   signInWithEmailAndPassword,
@@ -141,7 +142,6 @@ export async function authSignOut(app_) {
  * @param app_ Firebase application reference
  * @returns {Promise<void | string>} A promise for the result, or an error message
  */
-
 export function authDeleteUser(app_) {
   const auth = getAuth(app_);
   const user = auth.currentUser;
@@ -192,7 +192,6 @@ export function authGetUserUID(app_) {
  * @param app_ Firebase application reference
  * @param email_ Email address of the user
  */
-
 export async function authPWLessSignIn(app_, email_) {
   const actionCodeSettings = {
     url: 'http://localhost:5500/profile/profile.html',
@@ -221,7 +220,6 @@ export async function authPWLessSignIn(app_, email_) {
  * @param app_ Firebase application reference
  * @param loadContents Page contents load reference
  */
-
 export async function checkSignin(app_, loadContents) {
   const auth = getAuth(app_);
 
@@ -244,7 +242,6 @@ export async function checkSignin(app_, loadContents) {
  * Check if the user logged through Passwordless sign-in
  * @param app_ Firebase application reference
  */
-
 export async function isPasswordless(app_) {
   const auth = getAuth(app_);
   let success;
@@ -279,7 +276,6 @@ export async function isPasswordless(app_) {
  * @param app_ Firebase application reference
  * @param name_ Input name for name change
  */
-
 export async function changeDisplayName(app_, name_) {
   const auth = getAuth(app_);
   await updateProfile(auth.currentUser, {
@@ -297,8 +293,24 @@ export async function changeDisplayName(app_, name_) {
  * Refresh contents of the page upon change
  * @param app_ Firebase application reference
  */
-
 export function refreshContents(app_) {
-    const auth = getAuth(app_);
-    return auth.currentUser;
+  const auth = getAuth(app_);
+  return auth.currentUser;
+}
+
+/**
+ * Send a verification email to new user
+ * @param app_ Firebase application reference
+ * @returns {Promise<string>} A promise of a result message
+ */
+export async function authSendVerificationEmail(app_) {
+  const auth = getAuth(app_);
+
+  return new Promise((resolve, reject) => {
+    if (!auth.currentUser.emailVerified) {
+      sendEmailVerification(auth.currentUser)
+        .then(() => resolve('Sent a verification email to\n' + auth.currentUser.email))
+        .catch((err) => reject(err.message));
+    } else reject('Email already verified');
+  });
 }
