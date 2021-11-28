@@ -85,6 +85,8 @@ const forgotPassword = async () => {
   const username = document.getElementById('forgot-password-username').value;
   const domain = document.getElementById('forgot-password-domain').value;
   const forgotMessage = document.getElementById('forgot-password-message');
+  forgotMessage.innerHTML = '';
+  document.querySelector('.sent-message').innerHTML = '';
   if (!username || !domain) {
     forgotMessage.innerHTML = 'Please enter a valid email address.';
     return;
