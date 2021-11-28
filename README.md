@@ -1,6 +1,10 @@
 # SKKU Web Chat
 
-**SKKU Web Chat** is a simple chat app only for SKKU students.
+**SKKU Web Chat** is a simple chat app. This chat app makes it possible for verified skku students to chat with eachother. In order to use this chat app you will need to have acces to a skku email
+
+
+# Demo
+Post gif here
 
 # Build
 
@@ -16,6 +20,14 @@ Bundle JavaScript files with `webpack`
 - `/rdb`: Firebase Realtime Database test for message sync
 - `/storage`: Firebase Storage test for images
 - `test-db.json`: Example of the database
+- `/chats`: Chat page where messages are being sent
+- `profile`: Profile page where user log in and create new accounts
+
+
+# Technologies
+   - **Front-end:** Bootstrap
+   - **Back-end:** Firebase
+   - **Hosting:** Netlify
 
 # Members
 

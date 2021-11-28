@@ -195,7 +195,7 @@ function addNewChatBubble(chatID, chatData, chatBody) {
 
   // Add time
   // TODO: Convert UNIX timestamp to readable time
-  newChatBubble.innerHTML += '<small>' + chatData.time + '</small>';
+  newChatBubble.innerHTML += '<small>' + readableTimestamp(chatData.time) + '</small>';
 
   chatBody.appendChild(newChatBubble);
 }
@@ -252,18 +252,36 @@ function sendImage() {
   fileSelectDialog.click();
 }
 
+/**
+ * Create a new room
+ */
 function newRoom() {
   let otherUserID = window.prompt('Input the ID of the user to invite');
 
-  if ((otherUserID !== null) && (otherUserID !== "")) {
+  if (otherUserID !== null && otherUserID !== '') {
     rdb
       .rdbCreateNewRoom(app, auth.authGetUserUID(app), otherUserID)
       .then(() => {
         alert('Created new chat room');
-        window.location.reload()
+        window.location.reload();
       })
       .catch(alert);
   }
+}
+
+/**
+ * Convert UNIX timestamp to human-readable time
+ *
+ * @param unixTime{number} UNIX timestamp
+ */
+function readableTimestamp(unixTime) {
+  // Check instance of String
+  // https://stackoverflow.com/a/9436948
+  if (typeof unixTime === 'string' || unixTime instanceof String) {
+    unixTime = parseInt(unixTime);
+  }
+
+  return new Date(unixTime).toLocaleString();
 }
 
 function loadDocument() {
