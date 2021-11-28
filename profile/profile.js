@@ -5,6 +5,7 @@ import * as rdb from '../src/firebase-rdb';
 let currentUser;
 let name;
 const displayChatrooms = async (joinedRooms) => {
+  document.getElementById('recent-chats').innerHTML = '';
   if (!joinedRooms.length) {
     document.getElementById('recent-chats').innerHTML = `<li class="list-group-item">
       <div class="contact-wrapper">
@@ -15,7 +16,6 @@ const displayChatrooms = async (joinedRooms) => {
     for (let i = 0; i < joinedRooms.length; i++) {
       let room = joinedRooms[i];
       await rdb.rdbGetMembersFromChatRoom(app, room).then(async (resolve) => {
-        console.log(resolve);
         let friendID;
         if (resolve[0] === currentUser.displayName) friendID = resolve[1];
         else friendID = resolve[0];
@@ -32,11 +32,6 @@ const displayChatrooms = async (joinedRooms) => {
           })
           .catch((error) => {
             console.log(error);
-            document.getElementById('recent-chats').innerHTML = `<li class="list-group-item">
-      <div class="contact-wrapper">
-        <h3>You currently have no chats<h3>
-      </div>
-    </li>`;
           });
         if (lastMessage.user) {
           await rdb.rdbGetUserInfoFromID(app, lastMessage.user, 'name').then((resolve) => {
@@ -59,6 +54,22 @@ const displayChatrooms = async (joinedRooms) => {
             </div>
           </div>
         </li>`;
+        } else if (lastMessageUser && lastMessage.image) {
+          document.getElementById('recent-chats').innerHTML += `<li class="list-group-item">
+          <div class="contact-wrapper">
+            <div class="contact-pic">
+              <img
+                src=""
+                alt=""
+                onerror="this.src='https://www.royalunibrew.com/wp-content/uploads/2021/07/blank-profile-picture-973460_640.png'"
+              />
+            </div>
+            <div class="contact-content">
+              <h3>${friendName}</h3>
+              <p>${lastMessageUser}: Sent an attachment.</p>
+            </div>
+          </div>
+        </li>`;
         }
       });
     }
@@ -67,7 +78,6 @@ const displayChatrooms = async (joinedRooms) => {
 
 const loadContents = async () => {
   currentUser = auth.refreshContents(app);
-  console.log(currentUser);
   const email = currentUser.email;
   const ID = currentUser.displayName;
   [document.getElementById('user-email-username').value, document.getElementById('user-email-domain').value] =
@@ -84,7 +94,6 @@ const loadContents = async () => {
   await rdb.rdbGetUserJoinedChatRooms(app, ID).then((resolve) => {
     joinedRooms = resolve;
   });
-  console.log(joinedRooms);
   displayChatrooms(joinedRooms);
 };
 
